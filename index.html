@@ -70,34 +70,47 @@
   @keyframes fadeIn { from { opacity:0; transform: translateY(4px);} to {opacity:1; transform:translateY(0);} }
   .tab-panel.fade-in { animation: tabFadeIn .3s ease; }
   @keyframes tabFadeIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:translateY(0);} }
-  input[type="text"], input[type="number"], input[type="password"] {
+  input[type="text"], input[type="number"], input[type="password"], input[type="email"], input[type="date"] {
     transition: border-color .15s ease, box-shadow .15s ease;
   }
-  input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus {
+  input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus, input[type="email"]:focus, input[type="date"]:focus {
     box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
   }
+  select { color-scheme: dark; }
   button { transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .1s ease; }
   button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
   .toast { animation: toastIn .2s ease, toastOut .3s ease 2.2s forwards; }
   @keyframes toastIn { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform:translateY(0);} }
   @keyframes toastOut { to {opacity:0; transform: translateY(-6px);} }
+
+  /* ---------- Financial privacy toggle ---------- */
+  .privacy-on .sensitive-value {
+    filter: blur(6px);
+    transition: filter .25s ease;
+    user-select: none;
+  }
+  .sensitive-value { transition: filter .25s ease; }
 </style>
 </head>
 <body class="bg-base text-slate-200 min-h-screen font-sans antialiased">
 
-<!-- LOCK SCREEN -->
-<div id="lockScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-base/90 backdrop-blur-xl">
+<!-- AUTH SCREEN (Firebase Email/Password) -->
+<div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-base/90 backdrop-blur-xl">
   <div class="card glow fade-in rounded-2xl p-8 w-[90%] max-w-sm text-center">
     <div class="w-16 h-16 mx-auto rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
       <i class="fa-solid fa-chart-line text-2xl text-accent2"></i>
     </div>
-    <h1 class="text-xl font-bold text-white mb-1">Creator Dashboard</h1>
-    <p class="text-sm text-slate-400 mb-6">Enter password to continue</p>
-    <input id="pwInput" type="password" placeholder="Password" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-center text-lg tracking-widest text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
-    <button id="unlockBtn" class="w-full bg-accent hover:bg-indigo-500 transition text-white font-semibold py-3 rounded-lg">
-      <i class="fa-solid fa-unlock mr-2"></i>Unlock
+    <h1 class="text-xl font-bold text-white mb-1" id="authTitle">Creator Dashboard</h1>
+    <p class="text-sm text-slate-400 mb-6" id="authSubtitle">Sign in to continue</p>
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
+    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
+    <button id="authSubmitBtn" class="w-full bg-accent hover:bg-indigo-500 transition text-white font-semibold py-3 rounded-lg mb-3">
+      <i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In
     </button>
-    <p id="pwError" class="text-red-400 text-sm mt-3 hidden">Incorrect password</p>
+    <button id="authToggleModeBtn" type="button" class="text-xs text-slate-400 hover:text-accent2 transition">Don't have an account? Create one</button>
+    <p id="authError" class="text-red-400 text-sm mt-3 hidden"></p>
+    <p id="authStatus" class="text-slate-500 text-xs mt-4"></p>
   </div>
 </div>
 
@@ -118,6 +131,13 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
+          <span id="syncStatus" title="Sync status" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 px-2">
+            <i class="fa-solid fa-cloud-arrow-up text-accent2" id="syncIcon"></i>
+            <span id="syncLabel">Synced</span>
+          </span>
+          <button id="privacyToggle" title="Toggle amounts visibility" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-eye-slash" id="privacyIcon"></i>
+          </button>
           <button id="exportBtn" title="Export data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
             <i class="fa-solid fa-download"></i>
           </button>
@@ -128,8 +148,8 @@
           <button id="resetBtn" title="Reset all data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-red-500 flex items-center justify-center text-slate-300 hover:text-red-400">
             <i class="fa-solid fa-trash"></i>
           </button>
-          <button id="lockBtn" title="Lock dashboard" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
-            <i class="fa-solid fa-lock"></i>
+          <button id="lockBtn" title="Sign out" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
           </button>
         </div>
       </div>
@@ -177,7 +197,7 @@
             <span class="text-xs text-slate-400 uppercase tracking-wide">Total Net Revenue</span>
             <i class="fa-solid fa-sack-dollar text-emerald-400"></i>
           </div>
-          <p class="text-2xl font-bold text-emerald-400" id="ovNetRevenue">0.00 ر.س</p>
+          <p class="text-2xl font-bold text-emerald-400 sensitive-value" id="ovNetRevenue">0.00 ر.س</p>
           <p class="text-xs text-slate-500 mt-1">Revenue minus expenses</p>
         </div>
 
@@ -203,44 +223,49 @@
       <section class="card glow rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <p class="text-slate-400 text-sm mb-1">Total Combined Revenue</p>
-          <p class="text-4xl font-extrabold text-white" id="totalRevenue">0.00 ر.س</p>
+          <p class="text-4xl font-extrabold text-white sensitive-value" id="totalRevenue">0.00 ر.س</p>
           <p class="text-xs text-slate-500 mt-1">Sum of Salla sales + all platform + Donut SMP revenue</p>
           <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3 text-sm">
             <div class="flex items-center gap-1.5">
-              <span class="text-slate-500">Total Expenses:</span>
-              <span contenteditable="true" id="totalExpenses" class="text-white font-semibold">0.00</span>
+              <span class="text-slate-500">Other Expenses:</span>
+              <span contenteditable="true" id="totalExpenses" class="text-white font-semibold sensitive-value">0.00</span>
+              <span class="text-slate-500 text-xs">ر.س</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500">Logged Expenses:</span>
+              <span id="loggedExpensesTotal" class="text-white font-semibold sensitive-value">0.00</span>
               <span class="text-slate-500 text-xs">ر.س</span>
             </div>
             <div class="flex items-center gap-1.5">
               <span class="text-slate-500">Net Profit:</span>
-              <span id="netProfit" class="font-bold text-emerald-400">0.00 ر.س</span>
+              <span id="netProfit" class="font-bold text-emerald-400 sensitive-value">0.00 ر.س</span>
             </div>
           </div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Salla</p>
-            <p class="font-bold text-white" id="heroSalla">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroSalla">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">TikTok</p>
-            <p class="font-bold text-white" id="heroTiktok">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroTiktok">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">YouTube</p>
-            <p class="font-bold text-white" id="heroYoutube">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroYoutube">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Instagram</p>
-            <p class="font-bold text-white" id="heroInstagram">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroInstagram">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Snapchat</p>
-            <p class="font-bold text-white" id="heroSnapchat">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroSnapchat">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Donut SMP</p>
-            <p class="font-bold text-white" id="heroDonut">0.00 ر.س</p>
+            <p class="font-bold text-white sensitive-value" id="heroDonut">0.00 ر.س</p>
           </div>
         </div>
       </section>
@@ -262,6 +287,28 @@
       <section>
         <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-store text-accent2 mr-2"></i>Salla Store</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="sallaGrid"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-receipt text-red-400 mr-2"></i>Expenses & Platform Fees <span class="opacity-60 text-xs">/ Salla &amp; others</span></h2>
+          <span class="text-sm text-slate-400">Total: <span id="expenseLogTotal" class="font-semibold text-red-300 sensitive-value">0.00 ر.س</span></span>
+        </div>
+        <form id="expenseForm" class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
+          <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="Amount" class="sm:col-span-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="expenseDesc" type="text" placeholder="Description" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="expenseCategory" class="sm:col-span-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
+            <option value="Salla">Salla</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Snapchat">Snapchat</option>
+            <option value="Other">Other</option>
+          </select>
+          <input id="expenseDate" type="date" class="sm:col-span-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none" />
+          <button type="submit" class="sm:col-span-5 bg-red-600 hover:bg-red-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Log Expense</button>
+        </form>
+        <div id="expenseList" class="space-y-2"></div>
       </section>
 
       <section>
@@ -454,27 +501,61 @@
     </div>
 
     <footer class="text-center text-xs text-slate-600 pb-10">
-      Data stored locally in your browser. Nothing leaves this device.
+      Synced securely to your account via Firebase. Works offline and syncs automatically when you're back online.
     </footer>
   </main>
 </div>
 
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
-<script>
-(function(){
-  "use strict";
+<script type="module">
+  // =====================================================================
+  // 🔥 FIREBASE SETUP
+  // =====================================================================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut, setPersistence, browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, onSnapshot, serverTimestamp, enableIndexedDbPersistence
+  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-  const PASSWORD = "Lite123@";
+  // =====================================================================
+  // 👉 PASTE YOUR FIREBASE PROJECT CONFIG HERE 👈
+  // Firebase Console → Project Settings → General → "Your apps" → SDK setup and configuration
+  // Also enable: Authentication → Sign-in method → Email/Password, and Firestore Database.
+  // =====================================================================
+  const firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY_HERE",
+    authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+    storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+    appId: "PASTE_YOUR_APP_ID_HERE"
+  };
+  // =====================================================================
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
+  setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
+  enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
+
+  // =====================================================================
+  // 📦 APP STATE & LOCAL STORAGE FALLBACK
+  // =====================================================================
   const STORAGE_KEY = "creatorDashboardData_v2";
   const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
-  const SESSION_KEY = "creatorDashboardUnlocked";
+  const PRIVACY_KEY = "creatorDashboardPrivacyMode";
   const TABS = ['overview', 'revenue', 'fitness', 'projects', 'dailyLog'];
   const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
 
   const defaultData = {
     activeTab: 'overview',
     expenses: 0,
+    expensesLog: [],
     salla: { sales: 0, orders: 0, aov: 0, refunds: 0, usernamesStock: 0 },
     donutSmp: { revenue: 0, spawners: 0, shulkers: 0 },
     platforms: {
@@ -513,15 +594,15 @@
     return new Date().toISOString().slice(0,10);
   }
 
-  function loadData(){
+  // Normalizes an arbitrary parsed object (from localStorage OR Firestore) into the current schema.
+  function normalizeData(parsed){
     try {
-      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-      if(!raw) return structuredClone(defaultData);
-      const parsed = JSON.parse(raw);
+      if(!parsed) return structuredClone(defaultData);
       const merged = structuredClone(defaultData);
 
       merged.activeTab = TABS.includes(parsed.activeTab) ? parsed.activeTab : 'overview';
       merged.expenses = Number(parsed.expenses) || 0;
+      merged.expensesLog = Array.isArray(parsed.expensesLog) ? parsed.expensesLog : [];
       merged.salla = Object.assign({}, merged.salla, parsed.salla);
       merged.donutSmp = Object.assign({}, merged.donutSmp, parsed.donutSmp);
 
@@ -531,11 +612,9 @@
 
       merged.water.ml = Number(parsed.water && parsed.water.ml) || 0;
       merged.water.lastDate = (parsed.water && parsed.water.lastDate) || "";
-      // goal is always fixed at defaultData.water.goal (3500ml)
 
       merged.steps.count = Number(parsed.steps && parsed.steps.count) || 0;
       merged.steps.lastDate = (parsed.steps && parsed.steps.lastDate) || "";
-      // goal is always fixed at defaultData.steps.goal (10,000 steps)
 
       merged.cardio = { sessions: (parsed.cardio && Array.isArray(parsed.cardio.sessions)) ? parsed.cardio.sessions : [] };
 
@@ -556,7 +635,6 @@
           if(Array.isArray(parsed.workout.cycles)) merged.workout.cycles = parsed.workout.cycles;
           if(SPLIT_ORDER.includes(parsed.workout.activeSplit)) merged.workout.activeSplit = parsed.workout.activeSplit;
         } else if(parsed.workout.logs){
-          // legacy schema migration (pre-cycle workout log)
           SPLIT_ORDER.forEach(s => {
             if(Array.isArray(parsed.workout.logs[s])) merged.workout.exercises[s] = parsed.workout.logs[s];
           });
@@ -578,28 +656,103 @@
 
       return merged;
     } catch(e){
-      console.warn("Failed to load data, using defaults", e);
+      console.warn("Failed to normalize data, using defaults", e);
       return structuredClone(defaultData);
     }
   }
 
-  let data = loadData();
+  function loadLocalData(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+      if(!raw) return structuredClone(defaultData);
+      return normalizeData(JSON.parse(raw));
+    } catch(e){
+      console.warn("Failed to load local data, using defaults", e);
+      return structuredClone(defaultData);
+    }
+  }
 
-  if(data.water.lastDate !== todayStr()){
-    data.water.ml = 0;
-    data.water.lastDate = todayStr();
+  let data = structuredClone(defaultData);
+
+  function applyDailyResets(){
+    const today = todayStr();
+    let changed = false;
+    if(data.water.lastDate !== today){ data.water.ml = 0; data.water.lastDate = today; changed = true; }
+    if(data.steps.lastDate !== today){ data.steps.count = 0; data.steps.lastDate = today; changed = true; }
+    if(data.supplements.lastDate !== today){ data.supplements.checked = {}; data.supplements.lastDate = today; changed = true; }
+    if(changed) save();
   }
-  if(data.steps.lastDate !== todayStr()){
-    data.steps.count = 0;
-    data.steps.lastDate = todayStr();
+
+  // ---------- CLOUD SYNC (Firestore, scoped to users/{uid}) ----------
+  let currentUser = null;
+  let unsubscribeSnapshot = null;
+  let lastPushedJson = null;
+  let cloudSaveTimer = null;
+
+  function setSyncStatus(state){
+    const icon = document.getElementById('syncIcon');
+    const label = document.getElementById('syncLabel');
+    if(!icon || !label) return;
+    if(state === 'syncing'){
+      icon.className = "fa-solid fa-arrows-rotate fa-spin text-accent2";
+      label.textContent = "Syncing…";
+    } else if(state === 'offline'){
+      icon.className = "fa-solid fa-cloud-slash text-amber-400";
+      label.textContent = "Offline (local only)";
+    } else {
+      icon.className = "fa-solid fa-cloud-arrow-up text-accent2";
+      label.textContent = "Synced";
+    }
   }
-  if(data.supplements.lastDate !== todayStr()){
-    data.supplements.checked = {};
-    data.supplements.lastDate = todayStr();
+
+  function attachCloudSync(uid){
+    if(unsubscribeSnapshot) unsubscribeSnapshot();
+    const ref = doc(db, 'users', uid);
+    unsubscribeSnapshot = onSnapshot(ref, (snap) => {
+      if(!snap.exists()){
+        lastPushedJson = JSON.stringify(data);
+        setDoc(ref, { state: data, updatedAt: serverTimestamp() }).catch(err => {
+          console.warn("Initial cloud push failed (working offline):", err);
+          setSyncStatus('offline');
+        });
+        setSyncStatus('synced');
+        return;
+      }
+      const remoteState = snap.data().state;
+      if(!remoteState) return;
+      const remoteJson = JSON.stringify(remoteState);
+      if(remoteJson === lastPushedJson) { setSyncStatus('synced'); return; }
+      // Real-time update from another tab/device — merge and re-render instantly.
+      data = normalizeData(remoteState);
+      lastPushedJson = remoteJson;
+      applyDailyResets();
+      renderAll();
+      setSyncStatus('synced');
+    }, (err) => {
+      console.warn("Realtime sync error — continuing with local/offline data:", err);
+      setSyncStatus('offline');
+    });
+  }
+
+  function pushToCloud(){
+    if(!currentUser) return;
+    setSyncStatus('syncing');
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => {
+      lastPushedJson = JSON.stringify(data);
+      setDoc(doc(db, 'users', currentUser.uid), { state: data, updatedAt: serverTimestamp() })
+        .then(() => setSyncStatus('synced'))
+        .catch(err => {
+          console.warn("Cloud sync failed — data safely stored locally:", err);
+          setSyncStatus('offline');
+        });
+    }, 350);
   }
 
   function save(){
+    // Always persist locally first (offline fallback), then push to the cloud when signed in.
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    pushToCloud();
   }
 
   function toast(msg, icon){
@@ -615,41 +768,110 @@
     return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + " ر.س";
   }
 
-  // ---------- LOCK SCREEN ----------
-  const lockScreen = document.getElementById('lockScreen');
-  const app = document.getElementById('app');
-  const pwInput = document.getElementById('pwInput');
-  const pwError = document.getElementById('pwError');
+  // ---------- PRIVACY TOGGLE (financial figures show/hide) ----------
+  function isPrivacyMasked(){
+    return localStorage.getItem(PRIVACY_KEY) !== 'off'; // masked by default
+  }
+  function applyPrivacyMode(){
+    const masked = isPrivacyMasked();
+    document.body.classList.toggle('privacy-on', masked);
+    const icon = document.getElementById('privacyIcon');
+    if(icon) icon.className = masked ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+  }
+  document.getElementById('privacyToggle').addEventListener('click', () => {
+    const masked = isPrivacyMasked();
+    localStorage.setItem(PRIVACY_KEY, masked ? 'off' : 'on');
+    applyPrivacyMode();
+  });
+  applyPrivacyMode();
 
-  function unlock(){
-    if(pwInput.value === PASSWORD){
-      lockScreen.classList.add('hidden');
-      app.classList.remove('hidden');
-      sessionStorage.setItem(SESSION_KEY, "1");
-      pwError.classList.add('hidden');
-      pwInput.value = "";
-      renderAll();
+  // =====================================================================
+  // 🔐 FIREBASE AUTHENTICATION (Email & Password)
+  // =====================================================================
+  const authScreen = document.getElementById('authScreen');
+  const app = document.getElementById('app');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authError = document.getElementById('authError');
+  const authStatus = document.getElementById('authStatus');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authToggleModeBtn = document.getElementById('authToggleModeBtn');
+  const authTitle = document.getElementById('authTitle');
+  const authSubtitle = document.getElementById('authSubtitle');
+
+  let authMode = 'signin';
+
+  function setAuthMode(mode){
+    authMode = mode;
+    authError.classList.add('hidden');
+    if(mode === 'signup'){
+      authTitle.textContent = "Create Account";
+      authSubtitle.textContent = "Sign up to sync your dashboard everywhere";
+      authSubmitBtn.innerHTML = '<i class="fa-solid fa-user-plus mr-2"></i>Create Account';
+      authToggleModeBtn.textContent = "Already have an account? Sign in";
     } else {
-      pwError.classList.remove('hidden');
-      pwInput.classList.add('animate-pulse');
-      setTimeout(()=>pwInput.classList.remove('animate-pulse'), 400);
+      authTitle.textContent = "Creator Dashboard";
+      authSubtitle.textContent = "Sign in to continue";
+      authSubmitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In';
+      authToggleModeBtn.textContent = "Don't have an account? Create one";
     }
   }
 
-  document.getElementById('unlockBtn').addEventListener('click', unlock);
-  pwInput.addEventListener('keydown', e => { if(e.key === 'Enter') unlock(); });
+  authToggleModeBtn.addEventListener('click', () => setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
+
+  async function handleAuthSubmit(){
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    if(!email || !password){
+      authError.textContent = "Enter your email and password";
+      authError.classList.remove('hidden');
+      return;
+    }
+    authSubmitBtn.disabled = true;
+    authStatus.textContent = authMode === 'signup' ? "Creating your account…" : "Signing you in…";
+    try {
+      if(authMode === 'signup'){
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      authError.classList.add('hidden');
+    } catch(err){
+      authError.textContent = (err && err.message) ? err.message.replace('Firebase: ', '') : "Authentication failed";
+      authError.classList.remove('hidden');
+    } finally {
+      authSubmitBtn.disabled = false;
+      authStatus.textContent = "";
+    }
+  }
+
+  authSubmitBtn.addEventListener('click', handleAuthSubmit);
+  authPassword.addEventListener('keydown', e => { if(e.key === 'Enter') handleAuthSubmit(); });
+  authEmail.addEventListener('keydown', e => { if(e.key === 'Enter') authPassword.focus(); });
 
   document.getElementById('lockBtn').addEventListener('click', () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    app.classList.add('hidden');
-    lockScreen.classList.remove('hidden');
-    pwInput.focus();
+    signOut(auth).catch(err => console.warn("Sign out failed:", err));
   });
 
-  if(sessionStorage.getItem(SESSION_KEY) === "1"){
-    lockScreen.classList.add('hidden');
-    app.classList.remove('hidden');
-  }
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if(user){
+      authScreen.classList.add('hidden');
+      app.classList.remove('hidden');
+      data = loadLocalData(); // instant local render (works offline), cloud snapshot reconciles right after
+      applyDailyResets();
+      renderAll();
+      attachCloudSync(user.uid);
+    } else {
+      if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+      lastPushedJson = null;
+      app.classList.add('hidden');
+      authScreen.classList.remove('hidden');
+      authEmail.value = "";
+      authPassword.value = "";
+      setAuthMode('signin');
+    }
+  });
 
   // ---------- HEADER DATE ----------
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -681,6 +903,7 @@
       renderDigitalAssets();
       renderPlatforms();
       renderHero();
+      renderExpenses();
       if(revenueChart) revenueChart.resize();
       if(followersChart) followersChart.resize();
     } else if(tab === 'fitness'){
@@ -707,7 +930,7 @@
   function editableField(labelHtml, value, onCommit, isMoney){
     const span = document.createElement('span');
     span.contentEditable = "true";
-    span.className = "text-white font-bold";
+    span.className = "text-white font-bold" + (isMoney ? " sensitive-value" : "");
     span.textContent = isMoney ? Number(value||0).toFixed(2) : value;
     span.addEventListener('focus', () => {
       span.textContent = isMoney ? Number(value||0).toFixed(2) : value;
@@ -734,6 +957,10 @@
   }
 
   // ---------- REVENUE TOTALS (shared) ----------
+  function computeExpenseLogTotal(){
+    return (data.expensesLog || []).reduce((a, e) => a + (Number(e.amount) || 0), 0);
+  }
+
   function computeRevenueTotals(){
     const salla = Number(data.salla.sales)||0;
     const tiktok = Number(data.platforms.tiktok.revenue)||0;
@@ -742,9 +969,11 @@
     const snapchat = Number(data.platforms.snapchat.revenue)||0;
     const donut = Number(data.donutSmp.revenue)||0;
     const total = salla + tiktok + youtube + instagram + snapchat + donut;
-    const expenses = Number(data.expenses)||0;
+    const manualExpenses = Number(data.expenses)||0;
+    const loggedExpenses = computeExpenseLogTotal();
+    const expenses = manualExpenses + loggedExpenses;
     const net = total - expenses;
-    return { salla, tiktok, youtube, instagram, snapchat, donut, total, expenses, net };
+    return { salla, tiktok, youtube, instagram, snapchat, donut, total, manualExpenses, loggedExpenses, expenses, net };
   }
 
   // ---------- SALLA CARDS ----------
@@ -784,6 +1013,101 @@
       sallaGrid.append(card);
     });
   }
+
+  // ---------- EXPENSE & PAYMENT TRACKING (Salla & other platforms) ----------
+  const expenseForm = document.getElementById('expenseForm');
+  const expenseAmountInput = document.getElementById('expenseAmount');
+  const expenseDescInput = document.getElementById('expenseDesc');
+  const expenseCategoryInput = document.getElementById('expenseCategory');
+  const expenseDateInput = document.getElementById('expenseDate');
+  const expenseListEl = document.getElementById('expenseList');
+
+  function categoryIcon(cat){
+    switch(cat){
+      case 'Salla': return 'fa-store';
+      case 'TikTok': return 'fa-tiktok fa-brands';
+      case 'YouTube': return 'fa-youtube fa-brands';
+      case 'Instagram': return 'fa-instagram fa-brands';
+      case 'Snapchat': return 'fa-ghost';
+      default: return 'fa-receipt';
+    }
+  }
+
+  function renderExpenses(){
+    const list = (data.expensesLog || []).slice().sort((a,b) => (b.date||"").localeCompare(a.date||""));
+    expenseListEl.innerHTML = "";
+
+    if(list.length === 0){
+      expenseListEl.append(emptyStateEl('fa-receipt', "No expenses logged yet — add fees or payments above."));
+    } else {
+      list.forEach(entry => {
+        const idx = data.expensesLog.indexOf(entry);
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between gap-3 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
+
+        const left = document.createElement('div');
+        left.className = "flex items-center gap-3 min-w-0";
+        const icon = document.createElement('i');
+        icon.className = `fa-solid ${categoryIcon(entry.category)} text-red-400 flex-shrink-0`;
+        const info = document.createElement('div');
+        info.className = "min-w-0";
+        const descP = document.createElement('p');
+        descP.className = "text-slate-200 truncate";
+        descP.textContent = entry.description || "(no description)";
+        const metaP = document.createElement('p');
+        metaP.className = "text-xs text-slate-500";
+        metaP.textContent = `${entry.category || 'Other'} · ${entry.date || ''}`;
+        info.append(descP, metaP);
+        left.append(icon, info);
+
+        const right = document.createElement('div');
+        right.className = "flex items-center gap-3 flex-shrink-0";
+        const amt = document.createElement('span');
+        amt.className = "font-bold text-red-300 sensitive-value";
+        amt.textContent = "-" + fmtMoney(entry.amount);
+        const del = document.createElement('button');
+        del.className = "text-slate-500 hover:text-red-400";
+        del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        del.addEventListener('click', () => {
+          data.expensesLog.splice(idx, 1);
+          save();
+          renderExpenses();
+          renderHero();
+        });
+        right.append(amt, del);
+
+        row.append(left, right);
+        expenseListEl.append(row);
+      });
+    }
+
+    const totalStr = fmtMoney(computeExpenseLogTotal());
+    document.getElementById('expenseLogTotal').textContent = totalStr;
+  }
+
+  expenseForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = parseFloat(expenseAmountInput.value);
+    if(!amount || amount <= 0){
+      toast("Enter a valid expense amount", "fa-triangle-exclamation");
+      return;
+    }
+    const entry = {
+      id: Date.now() + Math.random().toString(36).slice(2),
+      amount,
+      description: expenseDescInput.value.trim(),
+      category: expenseCategoryInput.value || 'Other',
+      date: expenseDateInput.value || todayStr()
+    };
+    data.expensesLog.push(entry);
+    expenseAmountInput.value = "";
+    expenseDescInput.value = "";
+    expenseDateInput.value = "";
+    save();
+    renderExpenses();
+    renderHero();
+    toast("Expense logged", "fa-receipt");
+  });
 
   // ---------- DIGITAL ASSETS / DONUT SMP ----------
   const digitalGrid = document.getElementById('digitalGrid');
@@ -907,7 +1231,6 @@
 
   // ---------- HERO / TOTAL REVENUE ----------
   const totalExpensesEl = document.getElementById('totalExpenses');
-  totalExpensesEl.textContent = Number(data.expenses||0).toFixed(2);
   totalExpensesEl.addEventListener('blur', () => {
     let raw = totalExpensesEl.textContent.replace(/[^0-9.\-]/g,'');
     let num = parseFloat(raw);
@@ -930,8 +1253,10 @@
     document.getElementById('heroDonut').textContent = fmtMoney(t.donut);
 
     if(document.activeElement !== totalExpensesEl){
-      totalExpensesEl.textContent = t.expenses.toFixed(2);
+      totalExpensesEl.textContent = t.manualExpenses.toFixed(2);
     }
+    document.getElementById('loggedExpensesTotal').textContent = t.loggedExpenses.toFixed(2);
+
     const netEl = document.getElementById('netProfit');
     netEl.textContent = fmtMoney(t.net);
     netEl.classList.remove('text-emerald-400', 'text-red-400');
@@ -1470,27 +1795,13 @@
     renderSupplements();
   });
 
-  // Auto-reset water and supplements at midnight while the app stays open
+  // Auto-reset water/steps/supplements at midnight while the app stays open
   setInterval(() => {
-    const today = todayStr();
-    let changed = false;
-    if(data.water.lastDate !== today){
-      data.water.ml = 0;
-      data.water.lastDate = today;
-      changed = true;
-    }
-    if(data.steps.lastDate !== today){
-      data.steps.count = 0;
-      data.steps.lastDate = today;
-      changed = true;
-    }
-    if(data.supplements.lastDate !== today){
-      data.supplements.checked = {};
-      data.supplements.lastDate = today;
-      changed = true;
-    }
-    if(changed){
-      save();
+    if(!currentUser) return;
+    const before = JSON.stringify({ w: data.water.lastDate, s: data.steps.lastDate, sup: data.supplements.lastDate });
+    applyDailyResets();
+    const after = JSON.stringify({ w: data.water.lastDate, s: data.steps.lastDate, sup: data.supplements.lastDate });
+    if(before !== after){
       renderWater();
       renderSteps();
       renderSupplements();
@@ -1755,7 +2066,7 @@
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result);
-        data = Object.assign(structuredClone(defaultData), parsed);
+        data = normalizeData(Object.assign({}, defaultData, parsed));
         save();
         renderAll();
         toast("Data imported", "fa-upload");
@@ -1785,6 +2096,7 @@
     renderDigitalAssets();
     renderPlatforms();
     renderHero();
+    renderExpenses();
     renderRevenueChart();
     renderFollowersChart();
     renderWater();
@@ -1802,11 +2114,6 @@
     switchTab(data.activeTab);
   }
 
-  if(sessionStorage.getItem(SESSION_KEY) === "1"){
-    renderAll();
-  }
-
-})();
 </script>
 </body>
 </html>
