@@ -535,7 +535,6 @@
             <option value="once">One-time</option>
             <option value="daily">Daily</option>
           </select>
-          <input id="todoDueDate" type="date" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
           <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
         </form>
         <ul id="todoList" class="space-y-2"></ul>
@@ -2000,12 +1999,10 @@
       id: genId(),
       text: val,
       recurrence: document.getElementById('todoRecurrence').value,
-      dueDate: document.getElementById('todoDueDate').value || "",
       done: false,
       doneDate: ""
     });
     input.value = "";
-    document.getElementById('todoDueDate').value = "";
     save();
     renderTodos();
     renderOverviewTodos();

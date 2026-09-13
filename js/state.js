@@ -143,7 +143,7 @@ export const defaultData = {
 
   // Tasks & Productivity module
   tasksModule: {
-    todos: [],        // { id, text, recurrence: 'once'|'daily', dueDate: 'YYYY-MM-DD'|'', done, doneDate: 'YYYY-MM-DD'|'' }
+    todos: [],        // { id, text, recurrence: 'once'|'daily', done, doneDate: 'YYYY-MM-DD'|'' }
     milestones: [],   // { id, text, dueDate: 'YYYY-MM-DDTHH:mm', done }
     habitTemplates: ["Gym Push-Pull-Legs", "Supplements", "Coding"],
     habitChecks: {},  // { 'YYYY-MM-DD': { habitName: true } } — mirrors habitLog's date-keyed reset pattern
