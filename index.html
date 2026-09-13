@@ -536,7 +536,7 @@
             <option value="daily">Daily</option>
           </select>
           <input id="todoDueDate" type="date" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
-          <button type="submit" class="bg-sky-600 hover:bg-sky-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
         </form>
         <ul id="todoList" class="space-y-2"></ul>
       </section>
@@ -549,7 +549,7 @@
         <form id="milestoneForm" class="flex flex-wrap gap-2 mb-4">
           <input id="milestoneInput" type="text" placeholder="Add a milestone / project..." class="flex-1 min-w-[160px] bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
           <input id="milestoneDueDate" type="datetime-local" required class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
-          <button type="submit" class="bg-amber-600 hover:bg-amber-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
         </form>
         <ul id="milestoneList" class="space-y-2"></ul>
       </section>
@@ -561,7 +561,7 @@
         </div>
         <form id="habitForm" class="flex gap-2 mb-4">
           <input id="habitInput" type="text" placeholder="Add a habit template..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <button type="submit" class="bg-orange-600 hover:bg-orange-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
         </form>
         <div id="habitList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
       </section>
@@ -1924,7 +1924,14 @@
   // ---------- TASKS & PRODUCTIVITY MODULE ----------
   function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
+  // Defensive guard: a stale cached data object (old localStorage/Firestore snapshot
+  // loaded before this module existed) must never crash a click handler — self-heal it.
+  function ensureTasksModule(){
+    if(!data.tasksModule) data.tasksModule = structuredClone(defaultData.tasksModule);
+  }
+
   function renderTodos(){
+    ensureTasksModule();
     const arr = data.tasksModule.todos;
     const list = document.getElementById('todoList');
     const today = todayStr();
@@ -1985,6 +1992,7 @@
 
   document.getElementById('todoForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    ensureTasksModule();
     const input = document.getElementById('todoInput');
     const val = input.value.trim();
     if(!val) return;
@@ -2025,6 +2033,7 @@
   }
 
   function renderMilestones(){
+    ensureTasksModule();
     const arr = data.tasksModule.milestones;
     const list = document.getElementById('milestoneList');
     list.innerHTML = "";
@@ -2079,6 +2088,7 @@
 
   document.getElementById('milestoneForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    ensureTasksModule();
     const input = document.getElementById('milestoneInput');
     const dueInput = document.getElementById('milestoneDueDate');
     const val = input.value.trim();
@@ -2102,6 +2112,7 @@
   }, 1000);
 
   function renderHabitTracker(){
+    ensureTasksModule();
     const today = todayStr();
     document.getElementById('habitTrackerDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
     if(!data.tasksModule.habitChecks[today]) data.tasksModule.habitChecks[today] = {};
@@ -2140,6 +2151,7 @@
 
   document.getElementById('habitForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    ensureTasksModule();
     const input = document.getElementById('habitInput');
     const val = input.value.trim();
     if(!val || data.tasksModule.habitTemplates.includes(val)) return;
@@ -2153,6 +2165,7 @@
   const POMODORO_MS = 25 * 60 * 1000;
 
   function renderPomodoro(){
+    ensureTasksModule();
     const p = data.tasksModule.pomodoro;
     const today = todayStr();
     if(p.lastDate !== today){ p.sessionsToday = 0; p.lastDate = today; }
@@ -2185,6 +2198,7 @@
   }
 
   document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
+    ensureTasksModule();
     const p = data.tasksModule.pomodoro;
     if(p.running){
       // Pause: bank the remaining time so resuming doesn't reset the countdown.
@@ -2202,6 +2216,7 @@
   });
 
   document.getElementById('pomodoroResetBtn').addEventListener('click', () => {
+    ensureTasksModule();
     const p = data.tasksModule.pomodoro;
     p.running = false;
     p.endAt = null;
@@ -2811,32 +2826,38 @@
   });
 
   // ---------- RENDER ALL ----------
+  // Runs each renderer in isolation — one section's error (e.g. Chart.js failing to
+  // load from its CDN) must never cascade and block every later section's render.
+  function safeRender(fn){
+    try { fn(); } catch(err){ console.error(`renderAll: ${fn.name || 'render step'} failed`, err); }
+  }
+
   function renderAll(){
-    renderSalla();
-    renderDigitalAssets();
-    renderHero();
-    renderExpenses();
-    renderRevenueChart();
-    renderWater();
-    renderSteps();
-    renderWorkoutStatusCards();
-    renderExerciseLogger();
-    renderCardio();
-    renderSupplements();
-    renderAcademicChecklist();
-    renderSrsUmlChecklist();
-    renderPythonChecklist();
-    renderTodos();
-    renderMilestones();
-    renderHabitTracker();
-    renderPomodoro();
-    renderKanban();
-    renderStudyPlan();
-    renderGpaSection();
-    renderHabitCalendar();
-    renderOverviewTodos();
-    renderOverviewWidgets();
-    switchTab(data.activeTab);
+    safeRender(renderSalla);
+    safeRender(renderDigitalAssets);
+    safeRender(renderHero);
+    safeRender(renderExpenses);
+    safeRender(renderRevenueChart);
+    safeRender(renderWater);
+    safeRender(renderSteps);
+    safeRender(renderWorkoutStatusCards);
+    safeRender(renderExerciseLogger);
+    safeRender(renderCardio);
+    safeRender(renderSupplements);
+    safeRender(renderAcademicChecklist);
+    safeRender(renderSrsUmlChecklist);
+    safeRender(renderPythonChecklist);
+    safeRender(renderTodos);
+    safeRender(renderMilestones);
+    safeRender(renderHabitTracker);
+    safeRender(renderPomodoro);
+    safeRender(renderKanban);
+    safeRender(renderStudyPlan);
+    safeRender(renderGpaSection);
+    safeRender(renderHabitCalendar);
+    safeRender(renderOverviewTodos);
+    safeRender(renderOverviewWidgets);
+    safeRender(() => switchTab(data.activeTab));
   }
 
 </script>
