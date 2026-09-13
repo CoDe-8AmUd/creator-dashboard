@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator & Business Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          base: '#05070d',
+          panel: '#121826',
+          panel2: '#182131',
+          border: '#232d3f',
+          accent: '#6366f1',
+          accent2: '#22d3ee',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html { color-scheme: dark; }
+  body { background-color: #05070d; position: relative; }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(600px circle at 15% 10%, rgba(99,102,241,0.25), transparent 60%),
+      radial-gradient(600px circle at 85% 0%, rgba(34,211,238,0.18), transparent 60%),
+      radial-gradient(700px circle at 50% 100%, rgba(168,85,247,0.15), transparent 60%);
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #05070d; }
+  ::-webkit-scrollbar-thumb { background: #232d3f; border-radius: 6px; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  [contenteditable="true"] { outline: none; border-bottom: 1px dashed transparent; transition: border-color .15s; }
+  [contenteditable="true"]:hover { border-color: #6366f1; }
+  [contenteditable="true"]:focus { border-color: #22d3ee; background: rgba(34,211,238,0.07); border-radius: 4px; padding: 0 2px; }
+  .card {
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 4px 24px -8px rgba(0,0,0,0.5);
+  }
+  .glow { box-shadow: 0 0 0 1px rgba(99,102,241,0.2), 0 8px 24px -8px rgba(99,102,241,0.3); }
+  .todo-done { text-decoration: line-through; opacity: 0.45; }
+  .tab-btn-nav {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+  }
+  .tab-btn-nav:hover { color: #fff; }
+  .tab-btn-nav.active { color: #fff; border-bottom-color: #6366f1; }
+  .fade-in { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px);} to {opacity:1; transform:translateY(0);} }
+  .tab-panel.fade-in { animation: tabFadeIn .3s ease; }
+  @keyframes tabFadeIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:translateY(0);} }
+  input[type="text"], input[type="number"], input[type="password"] {
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus {
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  button { transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .1s ease; }
+  button:active { transform: scale(0.97); }
+  .toast { animation: toastIn .2s ease, toastOut .3s ease 2.2s forwards; }
+  @keyframes toastIn { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes toastOut { to {opacity:0; transform: translateY(-6px);} }
+</style>
+</head>
+<body class="bg-base text-slate-200 min-h-screen font-sans antialiased">
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-base/90 backdrop-blur-xl">
+  <div class="card glow fade-in rounded-2xl p-8 w-[90%] max-w-sm text-center">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
+      <i class="fa-solid fa-chart-line text-2xl text-accent2"></i>
+    </div>
+    <h1 class="text-xl font-bold text-white mb-1">Creator Dashboard</h1>
+    <p class="text-sm text-slate-400 mb-6">Enter password to continue</p>
+    <input id="pwInput" type="password" placeholder="Password" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-center text-lg tracking-widest text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
+    <button id="unlockBtn" class="w-full bg-accent hover:bg-indigo-500 transition text-white font-semibold py-3 rounded-lg">
+      <i class="fa-solid fa-unlock mr-2"></i>Unlock
+    </button>
+    <p id="pwError" class="text-red-400 text-sm mt-3 hidden">Incorrect password</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+  <div class="sticky top-0 z-40 backdrop-blur-md bg-base/70 border-b border-white/10">
+    <!-- Header -->
+    <header>
+      <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center">
+            <i class="fa-solid fa-bolt text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-white leading-none">Creator & Business Dashboard</h1>
+            <p class="text-xs text-slate-500 mt-1" id="todayDate"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="exportBtn" title="Export data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-download"></i>
+          </button>
+          <button id="importBtn" title="Import data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-upload"></i>
+          </button>
+          <input type="file" id="importFile" accept="application/json" class="hidden" />
+          <button id="resetBtn" title="Reset all data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-red-500 flex items-center justify-center text-slate-300 hover:text-red-400">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+          <button id="lockBtn" title="Lock dashboard" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Nav -->
+    <nav class="border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 md:px-6 flex gap-1 overflow-x-auto no-scrollbar">
+        <button class="tab-btn-nav active" data-tab="overview"><i class="fa-solid fa-house mr-1.5"></i>Overview <span class="opacity-60">/ الرئيسية</span></button>
+        <button class="tab-btn-nav" data-tab="revenue"><i class="fa-solid fa-sack-dollar mr-1.5"></i>Revenue & Business <span class="opacity-60">/ الأرباح والمشاريع</span></button>
+        <button class="tab-btn-nav" data-tab="fitness"><i class="fa-solid fa-dumbbell mr-1.5"></i>Fitness & Health <span class="opacity-60">/ النادي والصحة</span></button>
+        <button class="tab-btn-nav" data-tab="projects"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Projects & Tasks <span class="opacity-60">/ المشاريع والمهام</span></button>
+        <button class="tab-btn-nav" data-tab="dailyLog"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Daily Log <span class="opacity-60">/ السجل اليومي</span></button>
+      </div>
+    </nav>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-8">
+
+    <!-- ============ OVERVIEW TAB ============ -->
+    <div class="tab-panel space-y-8" data-tab="overview">
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 uppercase tracking-wide">Today's Water</span>
+            <i class="fa-solid fa-glass-water text-cyan-400"></i>
+          </div>
+          <p class="text-2xl font-bold text-white"><span id="ovWaterMl">0</span><span class="text-sm text-slate-500"> / 3,500 ml</span></p>
+          <div class="w-full bg-panel2 rounded-full h-2 border border-border overflow-hidden mt-3">
+            <div id="ovWaterBar" class="h-full bg-gradient-to-r from-cyan-500 to-accent2 transition-all duration-300" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 uppercase tracking-wide">Next Workout</span>
+            <i class="fa-solid fa-dumbbell text-orange-400"></i>
+          </div>
+          <p class="text-2xl font-bold text-white" id="ovNextWorkout">Push</p>
+          <p class="text-xs text-slate-500 mt-1" id="ovCycleProgress">0/3 completed this cycle</p>
+        </div>
+
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 uppercase tracking-wide">Total Net Revenue</span>
+            <i class="fa-solid fa-sack-dollar text-emerald-400"></i>
+          </div>
+          <p class="text-2xl font-bold text-emerald-400" id="ovNetRevenue">0.00 ر.س</p>
+          <p class="text-xs text-slate-500 mt-1">Revenue minus expenses</p>
+        </div>
+
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-slate-400 uppercase tracking-wide">Top To-Dos</span>
+            <i class="fa-solid fa-list-check text-indigo-300"></i>
+          </div>
+          <ul id="ovTodoList" class="space-y-2 text-sm"></ul>
+        </div>
+      </section>
+
+      <section>
+        <button id="archiveTodayBtn" class="card rounded-2xl p-4 w-full flex items-center justify-center gap-2 text-white font-semibold hover:border-accent transition">
+          <i class="fa-solid fa-box-archive text-accent2"></i>
+          Archive Today's Progress
+        </button>
+      </section>
+    </div>
+
+    <!-- ============ REVENUE & BUSINESS TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="revenue">
+      <section class="card glow rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-slate-400 text-sm mb-1">Total Combined Revenue</p>
+          <p class="text-4xl font-extrabold text-white" id="totalRevenue">0.00 ر.س</p>
+          <p class="text-xs text-slate-500 mt-1">Sum of Salla sales + all platform + Donut SMP revenue</p>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3 text-sm">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500">Total Expenses:</span>
+              <span contenteditable="true" id="totalExpenses" class="text-white font-semibold">0.00</span>
+              <span class="text-slate-500 text-xs">ر.س</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500">Net Profit:</span>
+              <span id="netProfit" class="font-bold text-emerald-400">0.00 ر.س</span>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">Salla</p>
+            <p class="font-bold text-white" id="heroSalla">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">TikTok</p>
+            <p class="font-bold text-white" id="heroTiktok">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">YouTube</p>
+            <p class="font-bold text-white" id="heroYoutube">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">Instagram</p>
+            <p class="font-bold text-white" id="heroInstagram">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">Snapchat</p>
+            <p class="font-bold text-white" id="heroSnapchat">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">Donut SMP</p>
+            <p class="font-bold text-white" id="heroDonut">0.00 ر.س</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-pie text-accent2 mr-2"></i>Revenue Breakdown</h2>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="revenueChart"></canvas>
+          <div id="revenueEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center gap-2 bg-panel2/95 backdrop-blur-sm rounded-xl">
+            <i class="fa-solid fa-chart-pie text-3xl text-slate-600"></i>
+            <p class="text-sm text-slate-400">No revenue data yet</p>
+            <p class="text-xs text-slate-600 max-w-[220px]">Edit your Salla, Donut SMP, or platform revenue fields below to see the breakdown</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-store text-accent2 mr-2"></i>Salla Store</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="sallaGrid"></div>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-gamepad text-accent2 mr-2"></i>Digital Assets & Gaming</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="digitalGrid"></div>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-layer-group text-accent2 mr-2"></i>Social Platforms</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="platformsGrid"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-line text-accent2 mr-2"></i>Followers Overview</h2>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="followersChart"></canvas>
+          <div id="followersEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center gap-2 bg-panel2/95 backdrop-blur-sm rounded-xl">
+            <i class="fa-solid fa-chart-line text-3xl text-slate-600"></i>
+            <p class="text-sm text-slate-400">No followers data yet</p>
+            <p class="text-xs text-slate-600 max-w-[220px]">Edit your platform follower/subscriber counts above</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ FITNESS & HEALTH TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="fitness">
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-white"><i class="fa-solid fa-glass-water text-cyan-400 mr-2"></i>Water Tracker</h2>
+            <span class="text-sm text-slate-400"><span id="waterMl">0</span> / 3,500 ml</span>
+          </div>
+          <div class="w-full bg-panel2 rounded-full h-4 border border-border overflow-hidden mb-4">
+            <div id="waterBar" class="h-full bg-gradient-to-r from-cyan-500 to-accent2 transition-all duration-300" style="width:0%"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button class="water-quick bg-panel2 border border-border hover:border-cyan-400 rounded-lg py-2 text-xs text-slate-200 transition" data-ml="200">
+              <span class="block font-semibold">+200 ml</span>
+              <span class="block text-[10px] text-slate-500">غرشة ربع ريال</span>
+            </button>
+            <button class="water-quick bg-panel2 border border-border hover:border-cyan-400 rounded-lg py-2 text-xs text-slate-200 transition" data-ml="330">
+              <span class="block font-semibold">+330 ml</span>
+              <span class="block text-[10px] text-slate-500">غرشة نص ريال</span>
+            </button>
+            <button class="water-quick bg-panel2 border border-border hover:border-cyan-400 rounded-lg py-2 text-xs text-slate-200 transition" data-ml="600">
+              <span class="block font-semibold">+600 ml</span>
+              <span class="block text-[10px] text-slate-500">غرشة ريال</span>
+            </button>
+          </div>
+          <div class="flex gap-2">
+            <input id="waterCustomInput" type="number" min="0" placeholder="Custom ml" class="flex-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+            <button id="waterCustomAdd" class="bg-cyan-600 hover:bg-cyan-500 transition text-white px-4 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+            <button id="waterReset" class="px-4 bg-panel2 border border-border hover:border-red-500 rounded-lg text-sm text-slate-300 hover:text-red-400">Reset</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">Daily goal fixed at 3,500 ml · resets automatically at midnight</p>
+        </div>
+
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-white"><i class="fa-solid fa-pills text-emerald-400 mr-2"></i>Daily Supplements</h2>
+            <span class="text-sm text-slate-400"><span id="suppDone">0</span>/<span id="suppTotal">0</span> taken</span>
+          </div>
+          <div id="suppList" class="space-y-2 mb-4"></div>
+          <form id="suppForm" class="flex gap-2">
+            <input id="suppInput" type="text" placeholder="Add supplement..." class="flex-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+          </form>
+          <div id="suppQuickAdd" class="flex flex-wrap gap-2 mt-3"></div>
+          <p class="text-xs text-slate-500 mt-3">Resets automatically at midnight</p>
+        </div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-calendar-check text-orange-400 mr-2"></i>Workout Split & Timeline</h2>
+          <span id="cycleProgress" class="text-sm text-slate-400">0/3 completed this cycle</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4" id="splitStatusCards"></div>
+        <p id="cycleHistory" class="text-xs text-slate-500"></p>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-dumbbell text-orange-400 mr-2"></i>Exercise Logger</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-4" id="splitTabs"></div>
+        <form id="exerciseForm" class="flex gap-2 mb-4">
+          <input id="exerciseInput" type="text" placeholder="Add exercise / machine..." class="flex-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-orange-600 hover:bg-orange-500 transition text-white px-4 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <div id="exerciseList" class="space-y-3"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-person-running text-cyan-300 mr-2"></i>Cardio & Steps Tracker</h2>
+          <span id="cardioWeekTotal" class="text-sm text-slate-400">0 km · 0 min this week</span>
+        </div>
+
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-slate-300"><i class="fa-solid fa-shoe-prints text-cyan-300 mr-1"></i>Daily Steps</span>
+            <span class="text-sm text-slate-400"><span id="stepsCount">0</span> / 10,000 steps</span>
+          </div>
+          <div class="w-full bg-panel2 rounded-full h-3 border border-border overflow-hidden mb-3">
+            <div id="stepsBar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-300" style="width:0%"></div>
+          </div>
+          <div class="flex gap-2">
+            <input id="stepsInput" type="number" min="0" placeholder="Log steps from smartwatch / health app..." class="flex-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+            <button id="stepsAdd" class="bg-cyan-600 hover:bg-cyan-500 transition text-white px-4 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+            <button id="stepsReset" class="px-4 bg-panel2 border border-border hover:border-red-500 rounded-lg text-sm text-slate-300 hover:text-red-400">Reset</button>
+          </div>
+        </div>
+
+        <form id="cardioForm" class="flex flex-wrap gap-2 mb-2">
+          <input id="cardioMinutes" type="number" min="0" placeholder="Minutes" class="w-28 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="cardioDistance" type="number" min="0" step="0.1" placeholder="Distance (km)" class="w-36 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 transition text-white px-4 rounded-lg text-sm"><i class="fa-solid fa-plus mr-1"></i>Log Session</button>
+        </form>
+        <p class="text-xs text-slate-500 mb-3">Logging a session auto-adds estimated steps (distance × 1,300)</p>
+        <div id="cardioList" class="space-y-2"></div>
+      </section>
+    </div>
+
+    <!-- ============ PROJECTS & TASKS TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="projects">
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-graduation-cap text-indigo-300 mr-2"></i>University Coursework</h2>
+          <span class="text-sm text-slate-400"><span id="academicDone">0</span>/<span id="academicTotal">0</span> done</span>
+        </div>
+        <form id="academicForm" class="flex gap-2 mb-4">
+          <input id="academicInput" type="text" placeholder="Add assignment, exam, or coursework task..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <ul id="academicList" class="space-y-2"></ul>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-diagram-project text-purple-300 mr-2"></i>SRS / UML Milestones</h2>
+          <span class="text-sm text-slate-400"><span id="srsUmlDone">0</span>/<span id="srsUmlTotal">0</span> done</span>
+        </div>
+        <form id="srsUmlForm" class="flex gap-2 mb-4">
+          <input id="srsUmlInput" type="text" placeholder="Add a milestone (e.g. Use Case Diagram)..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-purple-600 hover:bg-purple-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <ul id="srsUmlList" class="space-y-2"></ul>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-brands fa-python text-emerald-300 mr-2"></i>Python & Automation Scripts</h2>
+          <span class="text-sm text-slate-400"><span id="pythonDone">0</span>/<span id="pythonTotal">0</span> done</span>
+        </div>
+        <form id="pythonForm" class="flex gap-2 mb-4">
+          <input id="pythonInput" type="text" placeholder="Add a script or automation task..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <ul id="pythonList" class="space-y-2"></ul>
+      </section>
+    </div>
+
+    <!-- ============ DAILY LOG TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="dailyLog">
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-clock-rotate-left text-accent2 mr-2"></i>Daily Log</h2>
+          <span class="text-xs text-slate-500">Archived days: <span id="dailyLogCount">0</span></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-slate-500 uppercase border-b border-border">
+                <th class="py-2 px-3">Date</th>
+                <th class="py-2 px-3">Water (ml)</th>
+                <th class="py-2 px-3">Steps</th>
+                <th class="py-2 px-3">Workout Split Completed</th>
+                <th class="py-2 px-3">Tasks Finished</th>
+                <th class="py-2 px-3"></th>
+              </tr>
+            </thead>
+            <tbody id="dailyLogBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <footer class="text-center text-xs text-slate-600 pb-10">
+      Data stored locally in your browser. Nothing leaves this device.
+    </footer>
+  </main>
+</div>
+
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const PASSWORD = "Lite123@";
+  const STORAGE_KEY = "creatorDashboardData_v2";
+  const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
+  const SESSION_KEY = "creatorDashboardUnlocked";
+  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'dailyLog'];
+  const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
+
+  const defaultData = {
+    activeTab: 'overview',
+    expenses: 0,
+    salla: { sales: 0, orders: 0, aov: 0, refunds: 0, usernamesStock: 0 },
+    donutSmp: { revenue: 0, spawners: 0, shulkers: 0 },
+    platforms: {
+      tiktok:    { followers: 0, views: 0, revenue: 0, posts: 0 },
+      youtube:   { subscribers: 0, views: 0, revenue: 0, videos: 0 },
+      instagram: { followers: 0, views: 0, revenue: 0, reels: 0 },
+      snapchat:  { subscribers: 0, views: 0, revenue: 0, spotlights: 0 }
+    },
+    water: { ml: 0, goal: 3500, lastDate: "" },
+    steps: { count: 0, goal: 10000, lastDate: "" },
+    supplements: {
+      list: ["Vitamin D3", "Zinc", "Magnesium", "Omega-3"],
+      checked: {},
+      lastDate: ""
+    },
+    workout: {
+      activeSplit: "Push",
+      status: {
+        Push: { completed: false, completedAt: null },
+        Pull: { completed: false, completedAt: null },
+        Legs: { completed: false, completedAt: null }
+      },
+      exercises: { Push: [], Pull: [], Legs: [] },
+      cycles: []
+    },
+    cardio: { sessions: [] },
+    projects: {
+      academic: [],
+      srsUml: [],
+      python: []
+    },
+    dailyLog: []
+  };
+
+  function todayStr(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function loadData(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+      if(!raw) return structuredClone(defaultData);
+      const parsed = JSON.parse(raw);
+      const merged = structuredClone(defaultData);
+
+      merged.activeTab = TABS.includes(parsed.activeTab) ? parsed.activeTab : 'overview';
+      merged.expenses = Number(parsed.expenses) || 0;
+      merged.salla = Object.assign({}, merged.salla, parsed.salla);
+      merged.donutSmp = Object.assign({}, merged.donutSmp, parsed.donutSmp);
+
+      for(const k in merged.platforms){
+        if(parsed.platforms && parsed.platforms[k]) Object.assign(merged.platforms[k], parsed.platforms[k]);
+      }
+
+      merged.water.ml = Number(parsed.water && parsed.water.ml) || 0;
+      merged.water.lastDate = (parsed.water && parsed.water.lastDate) || "";
+      // goal is always fixed at defaultData.water.goal (3500ml)
+
+      merged.steps.count = Number(parsed.steps && parsed.steps.count) || 0;
+      merged.steps.lastDate = (parsed.steps && parsed.steps.lastDate) || "";
+      // goal is always fixed at defaultData.steps.goal (10,000 steps)
+
+      merged.cardio = { sessions: (parsed.cardio && Array.isArray(parsed.cardio.sessions)) ? parsed.cardio.sessions : [] };
+
+      merged.supplements = Object.assign({}, merged.supplements, parsed.supplements);
+      if(!Array.isArray(merged.supplements.list) || !merged.supplements.list.length) merged.supplements.list = defaultData.supplements.list.slice();
+      if(!merged.supplements.checked || typeof merged.supplements.checked !== 'object') merged.supplements.checked = {};
+
+      if(parsed.workout){
+        if(parsed.workout.status){
+          SPLIT_ORDER.forEach(s => {
+            if(parsed.workout.status[s]) merged.workout.status[s] = Object.assign({}, merged.workout.status[s], parsed.workout.status[s]);
+          });
+          if(parsed.workout.exercises){
+            SPLIT_ORDER.forEach(s => {
+              if(Array.isArray(parsed.workout.exercises[s])) merged.workout.exercises[s] = parsed.workout.exercises[s];
+            });
+          }
+          if(Array.isArray(parsed.workout.cycles)) merged.workout.cycles = parsed.workout.cycles;
+          if(SPLIT_ORDER.includes(parsed.workout.activeSplit)) merged.workout.activeSplit = parsed.workout.activeSplit;
+        } else if(parsed.workout.logs){
+          // legacy schema migration (pre-cycle workout log)
+          SPLIT_ORDER.forEach(s => {
+            if(Array.isArray(parsed.workout.logs[s])) merged.workout.exercises[s] = parsed.workout.logs[s];
+          });
+        }
+      }
+
+      if(parsed.projects){
+        merged.projects.academic = Array.isArray(parsed.projects.academic) ? parsed.projects.academic : [];
+        merged.projects.srsUml = Array.isArray(parsed.projects.srsUml) ? parsed.projects.srsUml : [];
+        merged.projects.python = Array.isArray(parsed.projects.python) ? parsed.projects.python : [];
+      } else {
+        const legacy = [];
+        if(Array.isArray(parsed.todos)) legacy.push(...parsed.todos);
+        if(Array.isArray(parsed.academicTasks)) legacy.push(...parsed.academicTasks);
+        merged.projects.academic = legacy;
+      }
+
+      merged.dailyLog = Array.isArray(parsed.dailyLog) ? parsed.dailyLog : [];
+
+      return merged;
+    } catch(e){
+      console.warn("Failed to load data, using defaults", e);
+      return structuredClone(defaultData);
+    }
+  }
+
+  let data = loadData();
+
+  if(data.water.lastDate !== todayStr()){
+    data.water.ml = 0;
+    data.water.lastDate = todayStr();
+  }
+  if(data.steps.lastDate !== todayStr()){
+    data.steps.count = 0;
+    data.steps.lastDate = todayStr();
+  }
+  if(data.supplements.lastDate !== todayStr()){
+    data.supplements.checked = {};
+    data.supplements.lastDate = todayStr();
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function toast(msg, icon){
+    const el = document.createElement('div');
+    el.className = "toast bg-panel2 border border-border rounded-lg px-4 py-2 text-sm text-white shadow-lg flex items-center gap-2";
+    el.innerHTML = `<i class="fa-solid ${icon||'fa-check'} text-accent2"></i><span>${msg}</span>`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(()=> el.remove(), 2600);
+  }
+
+  function fmtMoney(n){
+    n = Number(n) || 0;
+    return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + " ر.س";
+  }
+
+  // ---------- LOCK SCREEN ----------
+  const lockScreen = document.getElementById('lockScreen');
+  const app = document.getElementById('app');
+  const pwInput = document.getElementById('pwInput');
+  const pwError = document.getElementById('pwError');
+
+  function unlock(){
+    if(pwInput.value === PASSWORD){
+      lockScreen.classList.add('hidden');
+      app.classList.remove('hidden');
+      sessionStorage.setItem(SESSION_KEY, "1");
+      pwError.classList.add('hidden');
+      pwInput.value = "";
+      renderAll();
+    } else {
+      pwError.classList.remove('hidden');
+      pwInput.classList.add('animate-pulse');
+      setTimeout(()=>pwInput.classList.remove('animate-pulse'), 400);
+    }
+  }
+
+  document.getElementById('unlockBtn').addEventListener('click', unlock);
+  pwInput.addEventListener('keydown', e => { if(e.key === 'Enter') unlock(); });
+
+  document.getElementById('lockBtn').addEventListener('click', () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    app.classList.add('hidden');
+    lockScreen.classList.remove('hidden');
+    pwInput.focus();
+  });
+
+  if(sessionStorage.getItem(SESSION_KEY) === "1"){
+    lockScreen.classList.add('hidden');
+    app.classList.remove('hidden');
+  }
+
+  // ---------- HEADER DATE ----------
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // ---------- TAB NAVIGATION ----------
+  function switchTab(tab){
+    data.activeTab = tab;
+    save();
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      const isActive = panel.dataset.tab === tab;
+      panel.classList.toggle('hidden', !isActive);
+      if(isActive){
+        panel.classList.remove('fade-in');
+        void panel.offsetWidth; // force reflow so the fade-in animation restarts every switch
+        panel.classList.add('fade-in');
+      }
+    });
+    document.querySelectorAll('.tab-btn-nav').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+
+    // Re-render the tab being shown so it's never stale or empty, and so
+    // Chart.js canvases (which can't size themselves while display:none) redraw correctly.
+    if(tab === 'overview'){
+      renderOverviewWidgets();
+      renderOverviewTodos();
+    } else if(tab === 'revenue'){
+      renderSalla();
+      renderDigitalAssets();
+      renderPlatforms();
+      renderHero();
+      if(revenueChart) revenueChart.resize();
+      if(followersChart) followersChart.resize();
+    } else if(tab === 'fitness'){
+      renderWater();
+      renderSteps();
+      renderWorkoutStatusCards();
+      renderExerciseLogger();
+      renderCardio();
+      renderSupplements();
+    } else if(tab === 'projects'){
+      renderAcademicChecklist();
+      renderSrsUmlChecklist();
+      renderPythonChecklist();
+    } else if(tab === 'dailyLog'){
+      renderDailyLog();
+    }
+  }
+
+  document.querySelectorAll('.tab-btn-nav').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // ---------- EDITABLE FIELD FACTORY ----------
+  function editableField(labelHtml, value, onCommit, isMoney){
+    const span = document.createElement('span');
+    span.contentEditable = "true";
+    span.className = "text-white font-bold";
+    span.textContent = isMoney ? Number(value||0).toFixed(2) : value;
+    span.addEventListener('focus', () => {
+      span.textContent = isMoney ? Number(value||0).toFixed(2) : value;
+    });
+    span.addEventListener('blur', () => {
+      let raw = span.textContent.replace(/[^0-9.\-]/g,'');
+      let num = parseFloat(raw);
+      if(isNaN(num)) num = 0;
+      onCommit(num);
+      span.textContent = isMoney ? num.toFixed(2) : num;
+    });
+    span.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){ e.preventDefault(); span.blur(); }
+    });
+    return span;
+  }
+
+  // ---------- EMPTY STATE HELPER ----------
+  function emptyStateEl(icon, message, tag){
+    const el = document.createElement(tag || 'div');
+    el.className = "flex flex-col items-center justify-center gap-2 text-center py-8 text-slate-600" + (tag === 'li' ? " list-none" : "");
+    el.innerHTML = `<i class="fa-solid ${icon} text-3xl"></i><p class="text-sm text-slate-500 mt-1">${message}</p>`;
+    return el;
+  }
+
+  // ---------- REVENUE TOTALS (shared) ----------
+  function computeRevenueTotals(){
+    const salla = Number(data.salla.sales)||0;
+    const tiktok = Number(data.platforms.tiktok.revenue)||0;
+    const youtube = Number(data.platforms.youtube.revenue)||0;
+    const instagram = Number(data.platforms.instagram.revenue)||0;
+    const snapchat = Number(data.platforms.snapchat.revenue)||0;
+    const donut = Number(data.donutSmp.revenue)||0;
+    const total = salla + tiktok + youtube + instagram + snapchat + donut;
+    const expenses = Number(data.expenses)||0;
+    const net = total - expenses;
+    return { salla, tiktok, youtube, instagram, snapchat, donut, total, expenses, net };
+  }
+
+  // ---------- SALLA CARDS ----------
+  const sallaGrid = document.getElementById('sallaGrid');
+  const sallaFields = [
+    { key: 'sales', label: 'Sales', icon: 'fa-sack-dollar', money: true },
+    { key: 'orders', label: 'Orders', icon: 'fa-bag-shopping', money: false },
+    { key: 'aov', label: 'Avg Order Value', icon: 'fa-chart-simple', money: true },
+    { key: 'refunds', label: 'Refunds', icon: 'fa-rotate-left', money: true },
+    { key: 'usernamesStock', label: 'Usernames In Stock', icon: 'fa-at', money: false },
+  ];
+
+  function renderSalla(){
+    sallaGrid.innerHTML = "";
+    sallaFields.forEach(f => {
+      const card = document.createElement('div');
+      card.className = "card rounded-xl p-4";
+      const top = document.createElement('div');
+      top.className = "flex items-center justify-between mb-2";
+      top.innerHTML = `<span class="text-xs text-slate-400">${f.label}</span><i class="fa-solid ${f.icon} text-emerald-400"></i>`;
+      const valWrap = document.createElement('div');
+      valWrap.className = "text-xl font-bold text-white flex items-baseline gap-1";
+      const span = editableField(f.label, data.salla[f.key], (num) => {
+        data.salla[f.key] = num;
+        save();
+        renderHero();
+        renderRevenueChart();
+      }, f.money);
+      valWrap.append(span);
+      if(f.money){
+        const unit = document.createElement('span');
+        unit.className = "text-xs text-slate-400 font-normal";
+        unit.textContent = "ر.س";
+        valWrap.append(unit);
+      }
+      card.append(top, valWrap);
+      sallaGrid.append(card);
+    });
+  }
+
+  // ---------- DIGITAL ASSETS / DONUT SMP ----------
+  const digitalGrid = document.getElementById('digitalGrid');
+  const digitalFields = [
+    { key: 'revenue', label: 'Trading Revenue', icon: 'fa-coins', money: true },
+    { key: 'spawners', label: 'Spawners', icon: 'fa-cube', money: false },
+    { key: 'shulkers', label: 'Shulkers', icon: 'fa-box-archive', money: false },
+  ];
+
+  function renderDigitalAssets(){
+    digitalGrid.innerHTML = "";
+
+    const card = document.createElement('div');
+    card.className = "card rounded-xl p-4 sm:col-span-2";
+    const header = document.createElement('div');
+    header.className = "flex items-center gap-2 mb-3";
+    header.innerHTML = `<i class="fa-solid fa-gamepad text-violet-400 text-lg"></i><span class="font-semibold text-white">Donut SMP</span>`;
+    card.append(header);
+
+    const grid = document.createElement('div');
+    grid.className = "grid grid-cols-3 gap-3";
+    digitalFields.forEach(f => {
+      const box = document.createElement('div');
+      box.className = "bg-panel2 rounded-lg p-3 border border-border";
+      const lbl = document.createElement('p');
+      lbl.className = "text-[11px] text-slate-500 mb-0.5";
+      lbl.textContent = f.label;
+      const valWrap = document.createElement('p');
+      valWrap.className = "text-sm font-bold text-white flex items-baseline gap-1";
+      const span = editableField(f.label, data.donutSmp[f.key], (num) => {
+        data.donutSmp[f.key] = num;
+        save();
+        renderHero();
+        renderRevenueChart();
+      }, f.money);
+      valWrap.append(span);
+      if(f.money){
+        const unit = document.createElement('span');
+        unit.className = "text-[10px] text-slate-400 font-normal";
+        unit.textContent = "ر.س";
+        valWrap.append(unit);
+      }
+      box.append(lbl, valWrap);
+      grid.append(box);
+    });
+    card.append(grid);
+    digitalGrid.append(card);
+  }
+
+  // ---------- PLATFORM CARDS ----------
+  const platformsMeta = [
+    { key: 'tiktok', name: 'TikTok', icon: 'fa-brands fa-tiktok', color: 'text-pink-400', metrics: [
+      { key: 'followers', label: 'Followers', money:false },
+      { key: 'views', label: 'Views', money:false },
+      { key: 'posts', label: 'Posts', money:false },
+      { key: 'revenue', label: 'Revenue', money:true },
+    ]},
+    { key: 'youtube', name: 'YouTube Shorts', icon: 'fa-brands fa-youtube', color: 'text-red-400', metrics: [
+      { key: 'subscribers', label: 'Subscribers', money:false },
+      { key: 'views', label: 'Views', money:false },
+      { key: 'videos', label: 'Shorts', money:false },
+      { key: 'revenue', label: 'Revenue', money:true },
+    ]},
+    { key: 'instagram', name: 'Instagram Reels', icon: 'fa-brands fa-instagram', color: 'text-fuchsia-400', metrics: [
+      { key: 'followers', label: 'Followers', money:false },
+      { key: 'views', label: 'Views', money:false },
+      { key: 'reels', label: 'Reels', money:false },
+      { key: 'revenue', label: 'Revenue', money:true },
+    ]},
+    { key: 'snapchat', name: 'Snapchat Spotlight', icon: 'fa-solid fa-ghost', color: 'text-yellow-300', metrics: [
+      { key: 'subscribers', label: 'Subscribers', money:false },
+      { key: 'views', label: 'Views', money:false },
+      { key: 'spotlights', label: 'Spotlights', money:false },
+      { key: 'revenue', label: 'Revenue', money:true },
+    ]},
+  ];
+
+  const platformsGrid = document.getElementById('platformsGrid');
+
+  function renderPlatforms(){
+    platformsGrid.innerHTML = "";
+    platformsMeta.forEach(p => {
+      const card = document.createElement('div');
+      card.className = "card rounded-xl p-4";
+      const header = document.createElement('div');
+      header.className = "flex items-center gap-2 mb-3";
+      header.innerHTML = `<i class="${p.icon} ${p.color} text-lg"></i><span class="font-semibold text-white">${p.name}</span>`;
+      card.append(header);
+
+      const grid = document.createElement('div');
+      grid.className = "grid grid-cols-2 gap-3";
+      p.metrics.forEach(m => {
+        const box = document.createElement('div');
+        box.className = "bg-panel2 rounded-lg p-2 border border-border";
+        const lbl = document.createElement('p');
+        lbl.className = "text-[11px] text-slate-500 mb-0.5";
+        lbl.textContent = m.label;
+        const valWrap = document.createElement('p');
+        valWrap.className = "text-sm font-bold text-white flex items-baseline gap-1";
+        const span = editableField(m.label, data.platforms[p.key][m.key], (num) => {
+          data.platforms[p.key][m.key] = num;
+          save();
+          renderHero();
+          renderRevenueChart();
+          renderFollowersChart();
+        }, m.money);
+        valWrap.append(span);
+        if(m.money){
+          const unit = document.createElement('span');
+          unit.className = "text-[10px] text-slate-400 font-normal";
+          unit.textContent = "ر.س";
+          valWrap.append(unit);
+        }
+        box.append(lbl, valWrap);
+        grid.append(box);
+      });
+      card.append(grid);
+      platformsGrid.append(card);
+    });
+  }
+
+  // ---------- HERO / TOTAL REVENUE ----------
+  const totalExpensesEl = document.getElementById('totalExpenses');
+  totalExpensesEl.textContent = Number(data.expenses||0).toFixed(2);
+  totalExpensesEl.addEventListener('blur', () => {
+    let raw = totalExpensesEl.textContent.replace(/[^0-9.\-]/g,'');
+    let num = parseFloat(raw);
+    if(isNaN(num)) num = 0;
+    data.expenses = num;
+    save();
+    renderHero();
+  });
+  totalExpensesEl.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); totalExpensesEl.blur(); }});
+
+  function renderHero(){
+    const t = computeRevenueTotals();
+
+    document.getElementById('totalRevenue').textContent = fmtMoney(t.total);
+    document.getElementById('heroSalla').textContent = fmtMoney(t.salla);
+    document.getElementById('heroTiktok').textContent = fmtMoney(t.tiktok);
+    document.getElementById('heroYoutube').textContent = fmtMoney(t.youtube);
+    document.getElementById('heroInstagram').textContent = fmtMoney(t.instagram);
+    document.getElementById('heroSnapchat').textContent = fmtMoney(t.snapchat);
+    document.getElementById('heroDonut').textContent = fmtMoney(t.donut);
+
+    if(document.activeElement !== totalExpensesEl){
+      totalExpensesEl.textContent = t.expenses.toFixed(2);
+    }
+    const netEl = document.getElementById('netProfit');
+    netEl.textContent = fmtMoney(t.net);
+    netEl.classList.remove('text-emerald-400', 'text-red-400');
+    netEl.classList.add(t.net >= 0 ? 'text-emerald-400' : 'text-red-400');
+
+    renderOverviewWidgets();
+  }
+
+  // ---------- CHARTS ----------
+  let revenueChart, followersChart;
+
+  function renderRevenueChart(){
+    const ctx = document.getElementById('revenueChart');
+    const labels = ['Salla', 'TikTok', 'YouTube', 'Instagram', 'Snapchat', 'Donut SMP'];
+    const t = computeRevenueTotals();
+    const values = [t.salla, t.tiktok, t.youtube, t.instagram, t.snapchat, t.donut];
+    const colors = ['#22c55e', '#f472b6', '#f87171', '#e879f9', '#facc15', '#a78bfa'];
+    const total = values.reduce((a,b) => a+b, 0);
+    document.getElementById('revenueEmpty').classList.toggle('hidden', total > 0);
+
+    if(revenueChart){
+      revenueChart.data.datasets[0].data = values;
+      revenueChart.update();
+      return;
+    }
+    revenueChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#0b0f17', borderWidth: 2 }] },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { color: '#cbd5e1', usePointStyle: true } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${fmtMoney(ctx.raw)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderFollowersChart(){
+    const ctx = document.getElementById('followersChart');
+    const labels = ['TikTok', 'YouTube', 'Instagram', 'Snapchat'];
+    const values = [
+      Number(data.platforms.tiktok.followers)||0,
+      Number(data.platforms.youtube.subscribers)||0,
+      Number(data.platforms.instagram.followers)||0,
+      Number(data.platforms.snapchat.subscribers)||0,
+    ];
+    const colors = ['#f472b6', '#f87171', '#e879f9', '#facc15'];
+    const total = values.reduce((a,b) => a+b, 0);
+    document.getElementById('followersEmpty').classList.toggle('hidden', total > 0);
+
+    if(followersChart){
+      followersChart.data.datasets[0].data = values;
+      followersChart.update();
+      return;
+    }
+    followersChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Followers/Subscribers', data: values, backgroundColor: colors, borderRadius: 8 }] },
+      options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: '#1c2432' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#1c2432' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // ---------- WATER TRACKER ----------
+  function renderWater(){
+    const ml = Number(data.water.ml) || 0;
+    const goal = data.water.goal;
+    document.getElementById('waterMl').textContent = ml.toLocaleString();
+    const pct = Math.min(100, Math.round((ml/goal)*100));
+    document.getElementById('waterBar').style.width = pct + "%";
+    renderOverviewWidgets();
+  }
+
+  function addWaterMl(amount){
+    const wasBelowGoal = data.water.ml < data.water.goal;
+    data.water.ml = Math.max(0, data.water.ml + amount);
+    save();
+    renderWater();
+    if(wasBelowGoal && data.water.ml >= data.water.goal) toast("Water goal reached! 💧", "fa-droplet");
+  }
+
+  document.querySelectorAll('.water-quick').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addWaterMl(parseInt(btn.dataset.ml, 10) || 0);
+    });
+  });
+
+  document.getElementById('waterCustomAdd').addEventListener('click', () => {
+    const input = document.getElementById('waterCustomInput');
+    const amount = parseInt(input.value, 10);
+    if(!amount || amount <= 0){
+      toast("Enter an amount in ml", "fa-triangle-exclamation");
+      return;
+    }
+    addWaterMl(amount);
+    input.value = "";
+  });
+
+  document.getElementById('waterReset').addEventListener('click', () => {
+    data.water.ml = 0;
+    save();
+    renderWater();
+  });
+
+  // ---------- STEPS TRACKER ----------
+  function renderSteps(){
+    const count = Number(data.steps.count) || 0;
+    const goal = data.steps.goal;
+    document.getElementById('stepsCount').textContent = count.toLocaleString();
+    const pct = Math.min(100, Math.round((count/goal)*100));
+    document.getElementById('stepsBar').style.width = pct + "%";
+  }
+
+  function addSteps(amount){
+    const wasBelowGoal = data.steps.count < data.steps.goal;
+    data.steps.count = Math.max(0, data.steps.count + amount);
+    save();
+    renderSteps();
+    if(wasBelowGoal && data.steps.count >= data.steps.goal) toast("Daily steps goal reached! 🚶", "fa-shoe-prints");
+  }
+
+  document.getElementById('stepsAdd').addEventListener('click', () => {
+    const input = document.getElementById('stepsInput');
+    const amount = parseInt(input.value, 10);
+    if(!amount || amount <= 0){
+      toast("Enter a step count", "fa-triangle-exclamation");
+      return;
+    }
+    addSteps(amount);
+    input.value = "";
+  });
+
+  document.getElementById('stepsReset').addEventListener('click', () => {
+    data.steps.count = 0;
+    save();
+    renderSteps();
+  });
+
+  // ---------- WORKOUT SPLIT & TIMELINE (PPL CYCLE) ----------
+  function toggleSplitComplete(split){
+    const s = data.workout.status[split];
+    if(s.completed){
+      s.completed = false;
+      s.completedAt = null;
+    } else {
+      s.completed = true;
+      s.completedAt = new Date().toISOString();
+    }
+    checkCycleCompletion();
+    save();
+    renderWorkoutStatusCards();
+  }
+
+  function checkCycleCompletion(){
+    const allDone = SPLIT_ORDER.every(s => data.workout.status[s].completed);
+    if(allDone){
+      const splitsSnapshot = {};
+      SPLIT_ORDER.forEach(s => { splitsSnapshot[s] = data.workout.status[s].completedAt; });
+      data.workout.cycles.push({ completedAt: new Date().toISOString(), splits: splitsSnapshot });
+      SPLIT_ORDER.forEach(s => {
+        data.workout.status[s].completed = false;
+        data.workout.status[s].completedAt = null;
+      });
+      toast("3-day cycle complete! Logged and reset 🔁", "fa-rotate");
+    }
+  }
+
+  function renderCycleHistory(){
+    const wrap = document.getElementById('cycleHistory');
+    const cycles = data.workout.cycles;
+    if(cycles.length === 0){
+      wrap.textContent = "No completed cycles yet.";
+      return;
+    }
+    const recent = cycles.slice(-5).reverse();
+    wrap.textContent = "Recent cycles: " + recent.map(c => new Date(c.completedAt).toLocaleDateString()).join(", ");
+  }
+
+  function renderWorkoutStatusCards(){
+    const wrap = document.getElementById('splitStatusCards');
+    wrap.innerHTML = "";
+    SPLIT_ORDER.forEach(split => {
+      const s = data.workout.status[split];
+      const card = document.createElement('div');
+      card.className = "rounded-xl border p-4 " + (s.completed ? "bg-emerald-500/10 border-emerald-400" : "bg-panel2 border-border");
+
+      const top = document.createElement('div');
+      top.className = "flex items-center justify-between mb-2";
+      const name = document.createElement('span');
+      name.className = "font-semibold text-white";
+      name.textContent = split;
+      const icon = document.createElement('i');
+      icon.className = "fa-solid " + (s.completed ? "fa-circle-check text-emerald-400" : "fa-circle text-slate-600");
+      top.append(name, icon);
+
+      const status = document.createElement('p');
+      status.className = "text-xs mb-3 " + (s.completed ? "text-emerald-300" : "text-slate-500");
+      status.textContent = s.completed
+        ? `Completed ${split} on ${new Date(s.completedAt).toLocaleString()}`
+        : "Not completed yet";
+
+      const btn = document.createElement('button');
+      btn.className = "w-full text-sm rounded-lg py-2 transition " +
+        (s.completed
+          ? "bg-panel2 border border-border text-slate-300 hover:border-red-400 hover:text-red-400"
+          : "bg-orange-600 hover:bg-orange-500 text-white");
+      btn.textContent = s.completed ? "Undo" : "Mark Complete";
+      btn.addEventListener('click', () => toggleSplitComplete(split));
+
+      card.append(top, status, btn);
+      wrap.append(card);
+    });
+
+    const doneCount = SPLIT_ORDER.filter(s => data.workout.status[s].completed).length;
+    document.getElementById('cycleProgress').textContent = `${doneCount}/3 completed this cycle`;
+
+    renderCycleHistory();
+    renderOverviewWidgets();
+  }
+
+  // ---------- EXERCISE LOGGER ----------
+  function currentExercises(){
+    return data.workout.exercises[data.workout.activeSplit];
+  }
+
+  function renderSplitTabs(){
+    const wrap = document.getElementById('splitTabs');
+    wrap.innerHTML = "";
+    SPLIT_ORDER.forEach(split => {
+      const btn = document.createElement('button');
+      btn.className = "px-3 py-1.5 text-sm rounded-lg border transition " +
+        (split === data.workout.activeSplit ? "bg-accent border-accent text-white" : "bg-panel2 border-border text-slate-300 hover:text-white");
+      btn.textContent = split;
+      btn.addEventListener('click', () => {
+        data.workout.activeSplit = split;
+        save();
+        renderExerciseLogger();
+      });
+      wrap.append(btn);
+    });
+  }
+
+  document.getElementById('exerciseForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('exerciseInput');
+    const name = input.value.trim();
+    if(!name) return;
+    currentExercises().push({ id: Date.now() + Math.random().toString(36).slice(2), name, sets: [] });
+    input.value = "";
+    save();
+    renderExerciseLogger();
+  });
+
+  function renderExerciseList(){
+    const wrap = document.getElementById('exerciseList');
+    wrap.innerHTML = "";
+    const exercises = currentExercises();
+
+    if(exercises.length === 0){
+      wrap.append(emptyStateEl('fa-dumbbell', `No exercises logged for ${data.workout.activeSplit} yet.`));
+      return;
+    }
+
+    exercises.forEach((ex, idx) => {
+      const card = document.createElement('div');
+      card.className = "bg-panel2 border border-border rounded-xl p-4";
+
+      const header = document.createElement('div');
+      header.className = "flex items-center justify-between mb-2 gap-2";
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = "font-semibold text-white";
+      nameSpan.textContent = ex.name;
+
+      const rightWrap = document.createElement('div');
+      rightWrap.className = "flex items-center gap-3";
+
+      const maxWeight = ex.sets.length ? Math.max(...ex.sets.map(s => Number(s.weight) || 0)) : 0;
+      const best = document.createElement('span');
+      best.className = "text-xs text-slate-400";
+      best.append(document.createTextNode("Best: "));
+      const bestVal = document.createElement('span');
+      bestVal.className = "text-orange-300 font-bold";
+      bestVal.textContent = maxWeight;
+      best.append(bestVal, document.createTextNode(" kg"));
+
+      const delExBtn = document.createElement('button');
+      delExBtn.className = "text-slate-500 hover:text-red-400";
+      delExBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      delExBtn.addEventListener('click', () => {
+        currentExercises().splice(idx, 1);
+        save();
+        renderExerciseLogger();
+      });
+
+      rightWrap.append(best, delExBtn);
+      header.append(nameSpan, rightWrap);
+
+      const setsWrap = document.createElement('div');
+      setsWrap.className = "flex flex-wrap gap-2 mb-3";
+      if(ex.sets.length === 0){
+        const noSets = document.createElement('span');
+        noSets.className = "text-xs text-slate-500";
+        noSets.textContent = "No sets logged yet";
+        setsWrap.append(noSets);
+      }
+      ex.sets.forEach((s, sIdx) => {
+        const isPR = maxWeight > 0 && Number(s.weight) === maxWeight;
+        const chip = document.createElement('span');
+        chip.className = "border rounded-lg px-2 py-1 text-xs flex items-center gap-1 " +
+          (isPR ? "bg-amber-500/10 border-amber-400 text-amber-300" : "bg-base border-border text-slate-300");
+        chip.append(document.createTextNode(`${s.reps} reps × ${s.weight} kg`));
+        if(isPR){
+          const badge = document.createElement('i');
+          badge.className = "fa-solid fa-trophy text-amber-400";
+          badge.title = "Personal best";
+          chip.append(badge);
+        }
+        const delSet = document.createElement('button');
+        delSet.className = "text-slate-500 hover:text-red-400 ml-1";
+        delSet.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        delSet.addEventListener('click', () => {
+          ex.sets.splice(sIdx, 1);
+          save();
+          renderExerciseLogger();
+        });
+        chip.append(delSet);
+        setsWrap.append(chip);
+      });
+
+      const addSetRow = document.createElement('div');
+      addSetRow.className = "flex gap-2 flex-wrap";
+
+      const repsInput = document.createElement('input');
+      repsInput.type = "number";
+      repsInput.min = "0";
+      repsInput.placeholder = "Reps";
+      repsInput.className = "w-20 bg-base border border-border rounded-lg px-2 py-1.5 text-sm text-white";
+
+      const weightInput = document.createElement('input');
+      weightInput.type = "number";
+      weightInput.min = "0";
+      weightInput.step = "0.5";
+      weightInput.placeholder = "Kg";
+      weightInput.className = "w-24 bg-base border border-border rounded-lg px-2 py-1.5 text-sm text-white";
+
+      const addSetBtn = document.createElement('button');
+      addSetBtn.className = "bg-panel2 border border-border hover:border-orange-400 px-3 rounded-lg text-sm text-slate-300";
+      addSetBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i>Set';
+      addSetBtn.addEventListener('click', () => {
+        const reps = parseInt(repsInput.value);
+        const weight = parseFloat(weightInput.value);
+        if(!reps || isNaN(weight)){
+          toast("Enter reps and weight", "fa-triangle-exclamation");
+          return;
+        }
+        const prevBest = ex.sets.length ? Math.max(...ex.sets.map(s => Number(s.weight) || 0)) : 0;
+        const isNewPR = weight > 0 && weight >= prevBest;
+        ex.sets.push({ reps, weight, date: todayStr() });
+        repsInput.value = "";
+        weightInput.value = "";
+        save();
+        renderExerciseLogger();
+        if(isNewPR) toast(`New personal best on ${ex.name}: ${weight} kg 🏆`, "fa-trophy");
+      });
+
+      addSetRow.append(repsInput, weightInput, addSetBtn);
+      card.append(header, setsWrap, addSetRow);
+      wrap.append(card);
+    });
+  }
+
+  function renderExerciseLogger(){
+    renderSplitTabs();
+    renderExerciseList();
+  }
+
+  // ---------- TREADMILL CARDIO ----------
+  function renderCardio(){
+    const list = document.getElementById('cardioList');
+    list.innerHTML = "";
+    const sessions = data.cardio.sessions;
+
+    if(sessions.length === 0){
+      list.append(emptyStateEl('fa-person-running', "No cardio sessions logged yet."));
+    } else {
+      sessions.slice().reverse().forEach(s => {
+        const idx = sessions.indexOf(s);
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
+        const left = document.createElement('span');
+        left.className = "text-slate-300";
+        left.textContent = `${s.date} — ${s.minutes} min, ${s.distance} km`;
+        const del = document.createElement('button');
+        del.className = "text-slate-500 hover:text-red-400";
+        del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        del.addEventListener('click', () => {
+          sessions.splice(idx, 1);
+          save();
+          renderCardio();
+        });
+        row.append(left, del);
+        list.append(row);
+      });
+    }
+
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 6);
+    const weekAgoStr = weekAgo.toISOString().slice(0,10);
+    const weekSessions = sessions.filter(s => s.date >= weekAgoStr);
+    const totalKm = weekSessions.reduce((a,s) => a + (Number(s.distance)||0), 0);
+    const totalMin = weekSessions.reduce((a,s) => a + (Number(s.minutes)||0), 0);
+    document.getElementById('cardioWeekTotal').textContent = `${totalKm.toFixed(1)} km · ${totalMin} min this week`;
+  }
+
+  document.getElementById('cardioForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const minutesInput = document.getElementById('cardioMinutes');
+    const distanceInput = document.getElementById('cardioDistance');
+    const minutes = parseFloat(minutesInput.value) || 0;
+    const distance = parseFloat(distanceInput.value) || 0;
+    if(!minutes && !distance){
+      toast("Enter minutes or distance", "fa-triangle-exclamation");
+      return;
+    }
+    data.cardio.sessions.push({ minutes, distance, date: todayStr() });
+    minutesInput.value = "";
+    distanceInput.value = "";
+    save();
+    renderCardio();
+
+    const estimatedSteps = Math.round(distance * 1300);
+    if(estimatedSteps > 0){
+      addSteps(estimatedSteps);
+      toast(`Session logged · +${estimatedSteps.toLocaleString()} steps estimated`, "fa-shoe-prints");
+    } else {
+      toast("Cardio session logged", "fa-person-running");
+    }
+  });
+
+  // ---------- SUPPLEMENTS TRACKER ----------
+  const QUICK_SUPPLEMENTS = ["Vitamin D3", "Zinc", "Magnesium", "Omega-3", "Creatine", "Whey Protein"];
+
+  function renderSuppQuickAdd(){
+    const wrap = document.getElementById('suppQuickAdd');
+    wrap.innerHTML = "";
+    QUICK_SUPPLEMENTS.forEach(name => {
+      const exists = data.supplements.list.includes(name);
+      const chip = document.createElement('button');
+      chip.type = "button";
+      chip.className = "text-xs rounded-full px-3 py-1 border transition flex items-center gap-1 " +
+        (exists
+          ? "bg-panel2/50 border-border text-slate-600 cursor-default"
+          : "bg-panel2 border-border text-slate-300 hover:border-emerald-400 hover:text-emerald-300");
+      const icon = document.createElement('i');
+      icon.className = "fa-solid " + (exists ? "fa-check" : "fa-plus");
+      chip.append(icon, document.createTextNode(name));
+      if(exists){
+        chip.disabled = true;
+      } else {
+        chip.addEventListener('click', () => {
+          data.supplements.list.push(name);
+          save();
+          renderSupplements();
+        });
+      }
+      wrap.append(chip);
+    });
+  }
+
+  function renderSupplements(){
+    const wrap = document.getElementById('suppList');
+    wrap.innerHTML = "";
+    data.supplements.list.forEach((name, idx) => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+      const checked = !!data.supplements.checked[name];
+      const check = document.createElement('button');
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      check.addEventListener('click', () => {
+        data.supplements.checked[name] = !data.supplements.checked[name];
+        save();
+        renderSupplements();
+      });
+
+      const label = document.createElement('span');
+      label.className = "flex-1 text-sm " + (checked ? "text-slate-200" : "text-slate-300");
+      label.textContent = name;
+
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        data.supplements.list.splice(idx, 1);
+        delete data.supplements.checked[name];
+        save();
+        renderSupplements();
+      });
+
+      row.append(check, label, del);
+      wrap.append(row);
+    });
+
+    document.getElementById('suppTotal').textContent = data.supplements.list.length;
+    document.getElementById('suppDone').textContent = data.supplements.list.filter(n => data.supplements.checked[n]).length;
+    renderSuppQuickAdd();
+  }
+
+  document.getElementById('suppForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('suppInput');
+    const name = input.value.trim();
+    if(!name) return;
+    if(data.supplements.list.includes(name)){
+      toast("Already in list", "fa-triangle-exclamation");
+      input.value = "";
+      return;
+    }
+    data.supplements.list.push(name);
+    input.value = "";
+    save();
+    renderSupplements();
+  });
+
+  // Auto-reset water and supplements at midnight while the app stays open
+  setInterval(() => {
+    const today = todayStr();
+    let changed = false;
+    if(data.water.lastDate !== today){
+      data.water.ml = 0;
+      data.water.lastDate = today;
+      changed = true;
+    }
+    if(data.steps.lastDate !== today){
+      data.steps.count = 0;
+      data.steps.lastDate = today;
+      changed = true;
+    }
+    if(data.supplements.lastDate !== today){
+      data.supplements.checked = {};
+      data.supplements.lastDate = today;
+      changed = true;
+    }
+    if(changed){
+      save();
+      renderWater();
+      renderSteps();
+      renderSupplements();
+    }
+  }, 60000);
+
+  // ---------- PROJECTS & TASKS (generic checklist) ----------
+  function makeChecklist(getArray, els, checkedClass){
+    function render(){
+      const arr = getArray();
+      els.list.innerHTML = "";
+      if(arr.length === 0){
+        els.list.append(emptyStateEl('fa-clipboard-check', "No tasks yet — add one above.", 'li'));
+      }
+      arr.forEach((t, idx) => {
+        const li = document.createElement('li');
+        li.className = "fade-in flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+        const check = document.createElement('button');
+        check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+          (t.done ? checkedClass : "border-border text-transparent");
+        check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+        check.addEventListener('click', () => {
+          t.done = !t.done;
+          save();
+          render();
+          renderOverviewTodos();
+        });
+
+        const text = document.createElement('span');
+        text.contentEditable = "true";
+        text.className = "flex-1 text-sm " + (t.done ? "todo-done" : "text-slate-200");
+        text.textContent = t.text;
+        text.addEventListener('blur', () => {
+          t.text = text.textContent.trim() || t.text;
+          save();
+        });
+        text.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); text.blur(); }});
+
+        const del = document.createElement('button');
+        del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+        del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        del.addEventListener('click', () => {
+          arr.splice(idx, 1);
+          save();
+          render();
+          renderOverviewTodos();
+        });
+
+        li.append(check, text, del);
+        els.list.append(li);
+      });
+
+      els.total.textContent = arr.length;
+      els.done.textContent = arr.filter(t=>t.done).length;
+    }
+
+    els.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = els.input.value.trim();
+      if(!val) return;
+      getArray().push({ text: val, done: false });
+      els.input.value = "";
+      save();
+      render();
+      renderOverviewTodos();
+    });
+
+    return render;
+  }
+
+  const renderAcademicChecklist = makeChecklist(() => data.projects.academic, {
+    list: document.getElementById('academicList'),
+    form: document.getElementById('academicForm'),
+    input: document.getElementById('academicInput'),
+    total: document.getElementById('academicTotal'),
+    done: document.getElementById('academicDone')
+  }, "bg-indigo-500 border-indigo-500 text-white");
+
+  const renderSrsUmlChecklist = makeChecklist(() => data.projects.srsUml, {
+    list: document.getElementById('srsUmlList'),
+    form: document.getElementById('srsUmlForm'),
+    input: document.getElementById('srsUmlInput'),
+    total: document.getElementById('srsUmlTotal'),
+    done: document.getElementById('srsUmlDone')
+  }, "bg-purple-500 border-purple-500 text-white");
+
+  const renderPythonChecklist = makeChecklist(() => data.projects.python, {
+    list: document.getElementById('pythonList'),
+    form: document.getElementById('pythonForm'),
+    input: document.getElementById('pythonInput'),
+    total: document.getElementById('pythonTotal'),
+    done: document.getElementById('pythonDone')
+  }, "bg-emerald-500 border-emerald-500 text-white");
+
+  function renderOverviewTodos(){
+    const combined = [];
+    data.projects.academic.forEach(t => combined.push({ task: t, cat: 'Academic' }));
+    data.projects.srsUml.forEach(t => combined.push({ task: t, cat: 'SRS/UML' }));
+    data.projects.python.forEach(t => combined.push({ task: t, cat: 'Python' }));
+    const incomplete = combined.filter(c => !c.task.done).slice(0, 5);
+
+    const wrap = document.getElementById('ovTodoList');
+    wrap.innerHTML = "";
+    if(incomplete.length === 0){
+      wrap.append(emptyStateEl('fa-champagne-glasses', "All caught up!", 'li'));
+      return;
+    }
+    incomplete.forEach(c => {
+      const li = document.createElement('li');
+      li.className = "flex items-center gap-2";
+      const check = document.createElement('button');
+      check.className = "w-5 h-5 rounded border border-border flex-shrink-0 hover:border-emerald-400";
+      check.addEventListener('click', () => {
+        c.task.done = true;
+        save();
+        renderOverviewTodos();
+        renderAcademicChecklist();
+        renderSrsUmlChecklist();
+        renderPythonChecklist();
+      });
+      const label = document.createElement('span');
+      label.className = "flex-1 text-slate-300 truncate";
+      label.textContent = c.task.text;
+      const tag = document.createElement('span');
+      tag.className = "text-[10px] text-slate-500 bg-panel2 border border-border rounded px-1.5 py-0.5 flex-shrink-0";
+      tag.textContent = c.cat;
+      li.append(check, label, tag);
+      wrap.append(li);
+    });
+  }
+
+  // ---------- DAILY LOG (HISTORICAL ARCHIVE) ----------
+  function renderDailyLog(){
+    const tbody = document.getElementById('dailyLogBody');
+    tbody.innerHTML = "";
+    document.getElementById('dailyLogCount').textContent = data.dailyLog.length;
+
+    if(data.dailyLog.length === 0){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.append(emptyStateEl('fa-box-archive', "No archived days yet. Use \"Archive Today's Progress\" on the Overview tab."));
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    const rows = data.dailyLog.slice().sort((a,b) => b.date.localeCompare(a.date));
+    rows.forEach(entry => {
+      const idx = data.dailyLog.indexOf(entry);
+      const tr = document.createElement('tr');
+      tr.className = "border-b border-border/60";
+
+      const tdDate = document.createElement('td');
+      tdDate.className = "py-2 px-3 text-slate-200 whitespace-nowrap";
+      tdDate.textContent = new Date(entry.date + "T00:00:00").toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+
+      const tdWater = document.createElement('td');
+      tdWater.className = "py-2 px-3 text-slate-300";
+      tdWater.textContent = Number(entry.water||0).toLocaleString();
+
+      const tdSteps = document.createElement('td');
+      tdSteps.className = "py-2 px-3 text-slate-300";
+      tdSteps.textContent = Number(entry.steps||0).toLocaleString();
+
+      const tdWorkout = document.createElement('td');
+      tdWorkout.className = "py-2 px-3 text-slate-300";
+      tdWorkout.textContent = (entry.workoutCompleted && entry.workoutCompleted.length) ? entry.workoutCompleted.join(", ") : "—";
+
+      const tdTasks = document.createElement('td');
+      tdTasks.className = "py-2 px-3 text-slate-300";
+      tdTasks.textContent = entry.tasksFinished||0;
+
+      const tdActions = document.createElement('td');
+      tdActions.className = "py-2 px-3 text-right";
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        data.dailyLog.splice(idx, 1);
+        save();
+        renderDailyLog();
+      });
+      tdActions.append(del);
+
+      tr.append(tdDate, tdWater, tdSteps, tdWorkout, tdTasks, tdActions);
+      tbody.append(tr);
+    });
+  }
+
+  function archiveToday(){
+    const dateKey = todayStr();
+    const completedSplits = SPLIT_ORDER.filter(s => data.workout.status[s].completed);
+    const tasksFinished =
+      data.projects.academic.filter(t=>t.done).length +
+      data.projects.srsUml.filter(t=>t.done).length +
+      data.projects.python.filter(t=>t.done).length;
+
+    const entry = {
+      date: dateKey,
+      water: Number(data.water.ml)||0,
+      steps: Number(data.steps.count)||0,
+      workoutCompleted: completedSplits,
+      tasksFinished
+    };
+
+    const existingIdx = data.dailyLog.findIndex(e => e.date === dateKey);
+    if(existingIdx >= 0){
+      data.dailyLog[existingIdx] = entry;
+    } else {
+      data.dailyLog.push(entry);
+    }
+    save();
+    renderDailyLog();
+    toast(`Day ${dateKey} archived ✅`, "fa-box-archive");
+  }
+
+  document.getElementById('archiveTodayBtn').addEventListener('click', archiveToday);
+
+  // ---------- OVERVIEW WIDGETS ----------
+  function renderOverviewWidgets(){
+    const ml = Number(data.water.ml) || 0;
+    const goal = data.water.goal;
+    document.getElementById('ovWaterMl').textContent = ml.toLocaleString();
+    document.getElementById('ovWaterBar').style.width = Math.min(100, Math.round((ml/goal)*100)) + "%";
+
+    const doneCount = SPLIT_ORDER.filter(s => data.workout.status[s].completed).length;
+    const next = SPLIT_ORDER.find(s => !data.workout.status[s].completed) || SPLIT_ORDER[0];
+    document.getElementById('ovNextWorkout').textContent = next;
+    document.getElementById('ovCycleProgress').textContent = `${doneCount}/3 completed this cycle`;
+
+    const t = computeRevenueTotals();
+    const netEl = document.getElementById('ovNetRevenue');
+    netEl.textContent = fmtMoney(t.net);
+    netEl.classList.remove('text-emerald-400', 'text-red-400');
+    netEl.classList.add(t.net >= 0 ? 'text-emerald-400' : 'text-red-400');
+  }
+
+  // ---------- EXPORT / IMPORT / RESET ----------
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dashboard-backup-${todayStr()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("Data exported", "fa-download");
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        data = Object.assign(structuredClone(defaultData), parsed);
+        save();
+        renderAll();
+        toast("Data imported", "fa-upload");
+      } catch(err){
+        toast("Invalid file", "fa-triangle-exclamation");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if(confirm("Reset ALL dashboard data? This cannot be undone.")){
+      data = structuredClone(defaultData);
+      data.water.lastDate = todayStr();
+      data.steps.lastDate = todayStr();
+      data.supplements.lastDate = todayStr();
+      save();
+      renderAll();
+      toast("All data reset", "fa-trash");
+    }
+  });
+
+  // ---------- RENDER ALL ----------
+  function renderAll(){
+    renderSalla();
+    renderDigitalAssets();
+    renderPlatforms();
+    renderHero();
+    renderRevenueChart();
+    renderFollowersChart();
+    renderWater();
+    renderSteps();
+    renderWorkoutStatusCards();
+    renderExerciseLogger();
+    renderCardio();
+    renderSupplements();
+    renderAcademicChecklist();
+    renderSrsUmlChecklist();
+    renderPythonChecklist();
+    renderOverviewTodos();
+    renderOverviewWidgets();
+    renderDailyLog();
+    switchTab(data.activeTab);
+  }
+
+  if(sessionStorage.getItem(SESSION_KEY) === "1"){
+    renderAll();
+  }
+
+})();
+</script>
+</body>
+</html>
