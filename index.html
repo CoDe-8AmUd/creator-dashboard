@@ -229,6 +229,8 @@
         <button class="tab-btn-nav" data-tab="projects"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Projects & Tasks <span class="opacity-60">/ المشاريع والمهام</span></button>
         <button class="tab-btn-nav" data-tab="academic"><i class="fa-solid fa-university mr-1.5"></i>KFU CIS (0922) <span class="opacity-60">/ الأكاديمي</span></button>
         <button class="tab-btn-nav" data-tab="dailyLog"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Daily Log <span class="opacity-60">/ السجل اليومي</span></button>
+        <button class="tab-btn-nav" data-tab="vault"><i class="fa-solid fa-link mr-1.5"></i>Resource Vault <span class="opacity-60">/ مستودع الروابط</span></button>
+        <button class="tab-btn-nav" data-tab="settings"><i class="fa-solid fa-gear mr-1.5"></i>Settings <span class="opacity-60">/ الإعدادات</span></button>
       </div>
     </nav>
   </div>
@@ -249,6 +251,8 @@
       <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="projects"><i class="fa-solid fa-graduation-cap w-5"></i>Projects & Tasks</button>
       <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="academic"><i class="fa-solid fa-university w-5"></i>KFU CIS 0922</button>
       <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="dailyLog"><i class="fa-solid fa-calendar-days w-5"></i>Daily Log</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="vault"><i class="fa-solid fa-link w-5"></i>Resource Vault</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="settings"><i class="fa-solid fa-gear w-5"></i>Settings</button>
     </nav>
   </aside>
 
@@ -383,44 +387,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="digitalGrid"></div>
       </section>
 
-      <!-- ============ FINANCIAL & INVESTMENT MODULE ============ -->
-      <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-wallet text-emerald-300 mr-2"></i>Micro Financial Dashboard <span class="opacity-60 text-xs">/ لوحة مالية سريعة</span></h2>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
-            <p class="text-slate-500 text-xs">Monthly Goal</p>
-            <p class="font-bold text-white sensitive-value" id="fmGoalDisplay">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-emerald-500/30">
-            <p class="text-emerald-300 text-xs">Total Revenue</p>
-            <p class="font-bold text-emerald-300 sensitive-value" id="fmRevenueDisplay">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-red-500/30">
-            <p class="text-red-300 text-xs">Total Expenses</p>
-            <p class="font-bold text-red-300 sensitive-value" id="fmExpenseDisplay">0.00 ر.س</p>
-          </div>
-        </div>
-        <div class="w-full bg-panel2 rounded-full h-2.5 border border-border overflow-hidden mb-4">
-          <div id="fmGoalBar" class="h-full bg-gradient-to-r from-emerald-500 to-accent2 transition-all duration-300" style="width:0%"></div>
-        </div>
-        <form id="fmGoalForm" class="flex gap-2 mb-4">
-          <input id="fmGoalInput" type="number" min="0" step="0.01" placeholder="Set monthly goal..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg text-sm font-semibold">Set Goal</button>
-        </form>
-        <form id="fmEntryForm" class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
-          <input id="fmEntryAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <input id="fmEntryNote" type="text" placeholder="Note (optional)" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <select id="fmEntryType" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white outline-none">
-            <option value="revenue">Revenue</option>
-            <option value="expense">Expense</option>
-          </select>
-          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Entry</button>
-        </form>
-        <div id="fmEntryList" class="space-y-2"></div>
-      </section>
-
+      <!-- ============ INVESTMENT PORTFOLIO TRACKER ============ -->
       <section class="card rounded-2xl p-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-simple text-purple-300 mr-2"></i>Investment Portfolio Tracker <span class="opacity-60 text-xs">/ متتبع المحفظة الاستثمارية</span></h2>
@@ -631,6 +598,21 @@
           </div>
         </div>
       </section>
+
+      <!-- ============ WEEKLY ANALYTICS ============ -->
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-column text-teal-300 mr-2"></i>Weekly Analytics <span class="opacity-60 text-xs">/ التحليلات الأسبوعية</span></h2>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="weeklyAnalyticsChart"></canvas>
+          <div id="weeklyAnalyticsEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center gap-2 bg-panel2/95 backdrop-blur-sm rounded-xl">
+            <i class="fa-solid fa-chart-column text-3xl text-slate-600"></i>
+            <p class="text-sm text-slate-400">Chart unavailable right now</p>
+            <p class="text-xs text-slate-600 max-w-[220px]">The chart library couldn't load — your data is safe, just check your connection and refresh.</p>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- ============ KFU CIS (0922) ACADEMIC TAB ============ -->
@@ -758,6 +740,59 @@
             <div id="habitTrainingList" class="space-y-2"></div>
           </div>
         </div>
+      </section>
+    </div>
+
+    <!-- ============ RESOURCE & LINK VAULT TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="vault">
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-link text-cyan-300 mr-2"></i>Resource & Link Vault <span class="opacity-60 text-xs">/ مستودع الروابط والمراجع</span></h2>
+        </div>
+        <form id="vaultForm" class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
+          <input id="vaultTitle" type="text" placeholder="Title" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="vaultUrl" type="url" placeholder="https://..." required class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="vaultCategory" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <option value="Academic">Academic</option>
+            <option value="Programming">Programming</option>
+            <option value="GitHub">GitHub</option>
+            <option value="Docs">Docs</option>
+            <option value="Other">Other</option>
+          </select>
+          <input id="vaultTags" type="text" placeholder="Tags (comma separated)" class="sm:col-span-4 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="sm:col-span-1 bg-blue-600 hover:bg-blue-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add</button>
+        </form>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <input id="vaultSearch" type="text" placeholder="Search title or tag..." class="flex-1 min-w-[160px] bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="vaultFilterCategory" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <option value="">All Categories</option>
+            <option value="Academic">Academic</option>
+            <option value="Programming">Programming</option>
+            <option value="GitHub">GitHub</option>
+            <option value="Docs">Docs</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div id="vaultList" class="space-y-2"></div>
+      </section>
+    </div>
+
+    <!-- ============ SETTINGS TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="settings">
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-code text-accent2 mr-2"></i>Preferred Programming Languages <span class="opacity-60 text-xs">/ لغات البرمجة المفضلة</span></h2>
+        </div>
+        <div id="settingsLanguageChips" class="flex flex-wrap gap-2 mb-4"></div>
+        <form id="settingsLanguageForm" class="flex gap-2">
+          <input id="settingsLanguageInput" type="text" placeholder="Add a language (e.g. Rust)..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-database text-emerald-300 mr-2"></i>Data & Sync <span class="opacity-60 text-xs">/ البيانات والمزامنة</span></h2>
+        <p class="text-sm text-slate-400">All changes across every module save automatically to this device and sync in real time to your Firebase account when signed in — no manual save step is needed. Use <span class="text-white">Export data</span> in the top bar for an offline backup file.</p>
       </section>
     </div>
 
@@ -1052,12 +1087,22 @@
       renderAcademicChecklist();
       renderSrsUmlChecklist();
       renderPythonChecklist();
+      renderTodos();
+      renderMilestones();
+      renderHabitTracker();
+      renderPomodoro();
+      renderWeeklyAnalytics();
+      if(weeklyAnalyticsChart) weeklyAnalyticsChart.resize();
     } else if(tab === 'academic'){
       renderKanban();
       renderStudyPlan();
       renderGpaSection();
     } else if(tab === 'dailyLog'){
       renderHabitCalendar();
+    } else if(tab === 'vault'){
+      renderResourceVault();
+    } else if(tab === 'settings'){
+      renderSettings();
     }
   }
 
@@ -2229,9 +2274,12 @@
         p.running = false;
         p.endAt = null;
         p.sessionsToday++;
+        if(!data.tasksModule.pomodoroLog) data.tasksModule.pomodoroLog = {};
+        data.tasksModule.pomodoroLog[today] = (data.tasksModule.pomodoroLog[today] || 0) + 1;
         save();
         toast("Pomodoro session complete!", "fa-check");
         renderPomodoro();
+        safeRender(renderWeeklyAnalytics);
         return;
       }
       const mins = Math.floor(remaining / 60000);
@@ -2277,89 +2325,10 @@
 
   setInterval(renderPomodoro, 1000);
 
-  // ---------- FINANCIAL & INVESTMENT MODULE ----------
+  // ---------- INVESTMENT PORTFOLIO TRACKER ----------
   function ensureFinanceModule(){
     if(!data.financeModule) data.financeModule = structuredClone(defaultData.financeModule);
   }
-
-  function renderFinanceDashboard(){
-    ensureFinanceModule();
-    const fm = data.financeModule;
-    const revenue = fm.entries.filter(e => e.type === 'revenue').reduce((s,e) => s + (Number(e.amount)||0), 0);
-    const expense = fm.entries.filter(e => e.type === 'expense').reduce((s,e) => s + (Number(e.amount)||0), 0);
-
-    document.getElementById('fmGoalDisplay').textContent = fmtMoney(fm.monthlyGoal);
-    document.getElementById('fmRevenueDisplay').textContent = fmtMoney(revenue);
-    document.getElementById('fmExpenseDisplay').textContent = fmtMoney(expense);
-    const pct = fm.monthlyGoal > 0 ? Math.min(100, Math.round((revenue / fm.monthlyGoal) * 100)) : 0;
-    document.getElementById('fmGoalBar').style.width = pct + "%";
-
-    const list = document.getElementById('fmEntryList');
-    list.innerHTML = "";
-    if(fm.entries.length === 0){
-      list.append(emptyStateEl('fa-wallet', "No entries yet — add revenue or expenses above.", 'div'));
-    }
-    fm.entries.slice().reverse().forEach(entry => {
-      const row = document.createElement('div');
-      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
-      const icon = document.createElement('span');
-      icon.className = entry.type === 'revenue' ? "text-emerald-400" : "text-red-400";
-      icon.innerHTML = entry.type === 'revenue' ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>';
-      const body = document.createElement('div');
-      body.className = "flex-1";
-      const amountEl = document.createElement('div');
-      amountEl.className = "text-sm font-semibold sensitive-value " + (entry.type === 'revenue' ? "text-emerald-300" : "text-red-300");
-      amountEl.textContent = fmtMoney(entry.amount);
-      const noteEl = document.createElement('div');
-      noteEl.className = "text-[11px] text-slate-500";
-      noteEl.textContent = entry.note || (entry.type === 'revenue' ? 'Revenue' : 'Expense');
-      body.append(amountEl, noteEl);
-      const del = document.createElement('button');
-      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
-      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-      del.addEventListener('click', () => {
-        const idx = fm.entries.indexOf(entry);
-        if(idx > -1) fm.entries.splice(idx, 1);
-        save();
-        renderFinanceDashboard();
-      });
-      row.append(icon, body, del);
-      list.append(row);
-    });
-  }
-
-  document.getElementById('fmGoalForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    ensureFinanceModule();
-    const input = document.getElementById('fmGoalInput');
-    const val = Number(input.value);
-    if(!val || val <= 0) return;
-    data.financeModule.monthlyGoal = val;
-    input.value = "";
-    save();
-    renderFinanceDashboard();
-    toast("Monthly goal updated", "fa-bullseye");
-  });
-
-  document.getElementById('fmEntryForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    ensureFinanceModule();
-    const amountInput = document.getElementById('fmEntryAmount');
-    const noteInput = document.getElementById('fmEntryNote');
-    const amount = Number(amountInput.value);
-    if(!amount || amount <= 0) return;
-    data.financeModule.entries.push({
-      id: genId(),
-      type: document.getElementById('fmEntryType').value,
-      amount,
-      note: noteInput.value.trim(),
-      date: todayStr()
-    });
-    amountInput.value = "";
-    noteInput.value = "";
-    save();
-    renderFinanceDashboard();
-  });
 
   function renderPortfolio(){
     ensureFinanceModule();
@@ -2430,6 +2399,201 @@
     amountInput.value = "";
     save();
     renderPortfolio();
+  });
+
+  // ---------- WEEKLY ANALYTICS ----------
+  let weeklyAnalyticsChart = null;
+
+  function lastNDays(n){
+    const out = [];
+    for(let i = n - 1; i >= 0; i--){
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      out.push(d.toISOString().slice(0, 10));
+    }
+    return out;
+  }
+
+  function renderWeeklyAnalytics(){
+    ensureTasksModule();
+    const canvas = document.getElementById('weeklyAnalyticsChart');
+    const emptyEl = document.getElementById('weeklyAnalyticsEmpty');
+    if(typeof Chart === 'undefined'){
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+
+    const days = lastNDays(7);
+    const labels = days.map(d => new Date(d + "T00:00:00").toLocaleDateString(undefined, { weekday: 'short' }));
+
+    const habitTemplates = data.tasksModule.habitTemplates;
+    const habitChecks = data.tasksModule.habitChecks || {};
+    const habitPct = days.map(d => {
+      if(!habitTemplates.length) return 0;
+      const checks = habitChecks[d] || {};
+      const done = habitTemplates.filter(h => checks[h]).length;
+      return Math.round((done / habitTemplates.length) * 100);
+    });
+
+    const pomodoroLog = data.tasksModule.pomodoroLog || {};
+    const pomodoroCounts = days.map(d => pomodoroLog[d] || 0);
+
+    if(weeklyAnalyticsChart){
+      weeklyAnalyticsChart.data.labels = labels;
+      weeklyAnalyticsChart.data.datasets[0].data = habitPct;
+      weeklyAnalyticsChart.data.datasets[1].data = pomodoroCounts;
+      weeklyAnalyticsChart.update();
+      return;
+    }
+    weeklyAnalyticsChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Habit Completion %', data: habitPct, backgroundColor: '#22c55e', yAxisID: 'y' },
+          { label: 'Pomodoro Sessions', data: pomodoroCounts, backgroundColor: '#a78bfa', yAxisID: 'y1', type: 'line', tension: 0.3 }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { position: 'left', min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y1: { position: 'right', min: 0, ticks: { color: '#94a3b8', stepSize: 1 }, grid: { display: false } }
+        },
+        plugins: { legend: { labels: { color: '#cbd5e1' } } }
+      }
+    });
+  }
+
+  // ---------- RESOURCE & LINK VAULT ----------
+  function ensureResourceVault(){
+    if(!data.resourceVault) data.resourceVault = structuredClone(defaultData.resourceVault);
+  }
+
+  function renderResourceVault(){
+    ensureResourceVault();
+    const search = (document.getElementById('vaultSearch').value || "").trim().toLowerCase();
+    const filterCategory = document.getElementById('vaultFilterCategory').value;
+    const list = document.getElementById('vaultList');
+    list.innerHTML = "";
+
+    const filtered = data.resourceVault.links.filter(link => {
+      if(filterCategory && link.category !== filterCategory) return false;
+      if(!search) return true;
+      const haystack = (link.title + " " + link.tags.join(" ")).toLowerCase();
+      return haystack.includes(search);
+    });
+
+    if(filtered.length === 0){
+      list.append(emptyStateEl('fa-link', "No links yet — add one above.", 'div'));
+      return;
+    }
+    filtered.slice().reverse().forEach(link => {
+      const row = document.createElement('div');
+      row.className = "flex items-start gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+      const body = document.createElement('div');
+      body.className = "flex-1 min-w-0";
+      const titleRow = document.createElement('a');
+      titleRow.href = link.url;
+      titleRow.target = "_blank";
+      titleRow.rel = "noopener noreferrer";
+      titleRow.className = "text-sm text-white font-medium hover:text-accent2 transition truncate block";
+      titleRow.textContent = link.title || link.url;
+      const metaRow = document.createElement('div');
+      metaRow.className = "flex flex-wrap items-center gap-1.5 mt-1";
+      const catBadge = document.createElement('span');
+      catBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30";
+      catBadge.textContent = link.category;
+      metaRow.append(catBadge);
+      link.tags.forEach(tag => {
+        const tagBadge = document.createElement('span');
+        tagBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-panel border border-border text-slate-400";
+        tagBadge.textContent = tag;
+        metaRow.append(tagBadge);
+      });
+      body.append(titleRow, metaRow);
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = data.resourceVault.links.indexOf(link);
+        if(idx > -1) data.resourceVault.links.splice(idx, 1);
+        save();
+        renderResourceVault();
+      });
+      row.append(body, del);
+      list.append(row);
+    });
+  }
+
+  document.getElementById('vaultForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ensureResourceVault();
+    const titleInput = document.getElementById('vaultTitle');
+    const urlInput = document.getElementById('vaultUrl');
+    const tagsInput = document.getElementById('vaultTags');
+    const url = urlInput.value.trim();
+    if(!url) return;
+    data.resourceVault.links.push({
+      id: genId(),
+      title: titleInput.value.trim() || url,
+      url,
+      category: document.getElementById('vaultCategory').value,
+      tags: tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)
+    });
+    titleInput.value = "";
+    urlInput.value = "";
+    tagsInput.value = "";
+    save();
+    renderResourceVault();
+  });
+
+  document.getElementById('vaultSearch').addEventListener('input', renderResourceVault);
+  document.getElementById('vaultFilterCategory').addEventListener('change', renderResourceVault);
+
+  // ---------- SETTINGS ----------
+  function ensureSettings(){
+    if(!data.settings) data.settings = structuredClone(defaultData.settings);
+  }
+
+  function renderSettings(){
+    ensureSettings();
+    const wrap = document.getElementById('settingsLanguageChips');
+    wrap.innerHTML = "";
+    if(data.settings.languages.length === 0){
+      wrap.append(emptyStateEl('fa-code', "No languages added yet.", 'div'));
+      return;
+    }
+    data.settings.languages.forEach(lang => {
+      const chip = document.createElement('span');
+      chip.className = "inline-flex items-center gap-2 text-sm bg-panel2 border border-border rounded-full pl-3 pr-2 py-1.5 text-slate-200";
+      const label = document.createElement('span');
+      label.textContent = lang;
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition";
+      del.innerHTML = '<i class="fa-solid fa-xmark text-xs"></i>';
+      del.addEventListener('click', () => {
+        data.settings.languages = data.settings.languages.filter(l => l !== lang);
+        save();
+        renderSettings();
+      });
+      chip.append(label, del);
+      wrap.append(chip);
+    });
+  }
+
+  document.getElementById('settingsLanguageForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ensureSettings();
+    const input = document.getElementById('settingsLanguageInput');
+    const val = input.value.trim();
+    if(!val || data.settings.languages.includes(val)) return;
+    data.settings.languages.push(val);
+    input.value = "";
+    save();
+    renderSettings();
   });
 
   function renderOverviewTodos(){
@@ -3056,8 +3220,10 @@
     safeRender(renderMilestones);
     safeRender(renderHabitTracker);
     safeRender(renderPomodoro);
-    safeRender(renderFinanceDashboard);
+    safeRender(renderWeeklyAnalytics);
     safeRender(renderPortfolio);
+    safeRender(renderResourceVault);
+    safeRender(renderSettings);
     safeRender(renderKanban);
     safeRender(renderStudyPlan);
     safeRender(renderGpaSection);

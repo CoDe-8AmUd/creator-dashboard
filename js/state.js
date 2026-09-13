@@ -11,7 +11,7 @@ import { db, doc, setDoc, onSnapshot, serverTimestamp } from "./firebase.js";
 
 export const STORAGE_KEY = "creatorDashboardData_v2";
 export const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
-export const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'dailyLog'];
+export const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'dailyLog', 'vault', 'settings'];
 export const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
 export const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 'C': 3, 'D+': 2.5, 'D': 2, 'F': 0 };
 
@@ -147,18 +147,24 @@ export const defaultData = {
     milestones: [],   // { id, text, dueDate: 'YYYY-MM-DDTHH:mm', done }
     habitTemplates: ["Gym Push-Pull-Legs", "Supplements", "Coding"],
     habitChecks: {},  // { 'YYYY-MM-DD': { habitName: true } } — mirrors habitLog's date-keyed reset pattern
-    pomodoro: { running: false, endAt: null, sessionsToday: 0, lastDate: "" }
+    pomodoro: { running: false, endAt: null, sessionsToday: 0, lastDate: "" },
+    pomodoroLog: {}   // { 'YYYY-MM-DD': count } — completed sessions per day, feeds Weekly Analytics
   },
 
   settings: {
     languages: []     // preferred programming languages, e.g. ['JavaScript','Python']
   },
 
-  // Financial & Investment module
+  // Financial & Investment module — Investment Portfolio Tracker only
+  // (the earlier manual daily revenue/expense quick-entry dashboard was retired; the
+  // Salla/expense tracker in the Revenue & Business tab remains the source of truth for those)
   financeModule: {
-    monthlyGoal: 0,
-    entries: [],    // { id, type: 'revenue'|'expense', amount, note, date: 'YYYY-MM-DD' } — quick-entry log, independent of the Salla/expense tracker above
     portfolio: []   // { id, platform, assetType, amount }
+  },
+
+  // Resource & Link Vault
+  resourceVault: {
+    links: []       // { id, title, url, category, tags: [] }
   }
 };
 
@@ -242,15 +248,20 @@ export function normalizeData(parsed){
       if(Array.isArray(tm.habitTemplates) && tm.habitTemplates.length) merged.tasksModule.habitTemplates = tm.habitTemplates;
       if(tm.habitChecks && typeof tm.habitChecks === 'object') merged.tasksModule.habitChecks = tm.habitChecks;
       if(tm.pomodoro) merged.tasksModule.pomodoro = Object.assign({}, merged.tasksModule.pomodoro, tm.pomodoro);
+      if(tm.pomodoroLog && typeof tm.pomodoroLog === 'object') merged.tasksModule.pomodoroLog = tm.pomodoroLog;
     }
 
     if(parsed.settings && Array.isArray(parsed.settings.languages)) merged.settings.languages = parsed.settings.languages;
 
-    if(parsed.financeModule){
-      const fm = parsed.financeModule;
-      merged.financeModule.monthlyGoal = Number(fm.monthlyGoal) || 0;
-      if(Array.isArray(fm.entries)) merged.financeModule.entries = fm.entries;
-      if(Array.isArray(fm.portfolio)) merged.financeModule.portfolio = fm.portfolio;
+    // financeModule: only `portfolio` is part of the current schema (the manual daily
+    // revenue/expense quick-entry dashboard was retired) — any legacy monthlyGoal/entries
+    // fields in old stored data are simply left untouched in Firestore and never read here.
+    if(parsed.financeModule && Array.isArray(parsed.financeModule.portfolio)){
+      merged.financeModule.portfolio = parsed.financeModule.portfolio;
+    }
+
+    if(parsed.resourceVault && Array.isArray(parsed.resourceVault.links)){
+      merged.resourceVault.links = parsed.resourceVault.links;
     }
 
     return merged;
