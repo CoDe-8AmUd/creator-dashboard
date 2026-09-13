@@ -143,34 +143,6 @@
   </div>
 </div>
 
-<!-- FIREBASE SETUP MODAL (shown when config is missing/invalid) -->
-<div id="setupModal" class="modal-overlay hidden">
-  <div class="card glow rounded-2xl p-6 w-[92%] max-w-lg">
-    <div class="flex items-center gap-3 mb-3">
-      <div class="w-11 h-11 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
-      </div>
-      <div>
-        <h2 class="font-bold text-white">Firebase Setup Required</h2>
-        <p class="text-xs text-slate-400">Cloud sync can't connect yet — the dashboard will keep working offline.</p>
-      </div>
-    </div>
-    <p id="setupModalMessage" class="text-sm text-slate-300 mb-3">Your Firebase configuration keys look missing or invalid.</p>
-    <ol class="text-sm text-slate-400 list-decimal list-inside space-y-1.5 mb-4">
-      <li>Go to your <span class="text-white font-medium">Firebase Console → Project Settings → General</span></li>
-      <li>Under "Your apps", copy the <span class="text-white font-medium">firebaseConfig</span> object</li>
-      <li>Open <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">index.html</code>, find the block bordered with <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">// ===</code> near the top of the <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">&lt;script type="module"&gt;</code> tag, and paste your keys in</li>
-      <li>Enable <span class="text-white font-medium">Authentication → Email/Password</span> and <span class="text-white font-medium">Firestore Database</span> in the console</li>
-      <li>Reload this page</li>
-    </ol>
-    <div class="flex gap-2">
-      <button id="setupModalDismiss" class="flex-1 bg-panel2 border border-border hover:border-accent text-slate-200 rounded-lg py-2.5 text-sm font-semibold">
-        Continue in local-only mode
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- GPA / GRADES PIN-PROTECTED MODAL -->
 <div id="gpaPinModal" class="modal-overlay hidden">
   <div class="card glow rounded-2xl p-6 w-[90%] max-w-sm text-center">
@@ -209,6 +181,9 @@
     <header>
       <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
+          <button id="hamburgerBtn" title="Menu" class="w-10 h-10 rounded-xl bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-200 flex-shrink-0">
+            <i class="fa-solid fa-bars"></i>
+          </button>
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center">
             <i class="fa-solid fa-bolt text-white"></i>
           </div>
@@ -253,11 +228,29 @@
         <button class="tab-btn-nav" data-tab="fitness"><i class="fa-solid fa-dumbbell mr-1.5"></i>Fitness & Health <span class="opacity-60">/ النادي والصحة</span></button>
         <button class="tab-btn-nav" data-tab="projects"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Projects & Tasks <span class="opacity-60">/ المشاريع والمهام</span></button>
         <button class="tab-btn-nav" data-tab="academic"><i class="fa-solid fa-university mr-1.5"></i>KFU CIS (0922) <span class="opacity-60">/ الأكاديمي</span></button>
-        <button class="tab-btn-nav" data-tab="calendar"><i class="fa-solid fa-calendar-days mr-1.5"></i>Calendar <span class="opacity-60">/ التقويم</span></button>
         <button class="tab-btn-nav" data-tab="dailyLog"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Daily Log <span class="opacity-60">/ السجل اليومي</span></button>
       </div>
     </nav>
   </div>
+
+  <!-- Hamburger sidebar drawer -->
+  <div id="sidebarOverlay" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"></div>
+  <aside id="sidebarDrawer" class="fixed top-0 left-0 z-50 h-full w-72 bg-panel border-r border-white/10 shadow-2xl transform -translate-x-full transition-transform duration-300">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+      <span class="font-bold text-white"><i class="fa-solid fa-bolt text-accent2 mr-2"></i>Menu</span>
+      <button id="sidebarCloseBtn" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-red-400 hover:text-red-400 text-slate-300 flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <nav class="p-3 space-y-1">
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="overview"><i class="fa-solid fa-house w-5"></i>Overview</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="revenue"><i class="fa-solid fa-sack-dollar w-5"></i>Revenue & Business</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="fitness"><i class="fa-solid fa-dumbbell w-5"></i>Fitness & Health</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="projects"><i class="fa-solid fa-graduation-cap w-5"></i>Projects & Tasks</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="academic"><i class="fa-solid fa-university w-5"></i>KFU CIS 0922</button>
+      <button class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-panel2 hover:text-white transition" data-tab="dailyLog"><i class="fa-solid fa-calendar-days w-5"></i>Daily Log</button>
+    </nav>
+  </aside>
 
   <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-8">
 
@@ -302,12 +295,6 @@
         </div>
       </section>
 
-      <section>
-        <button id="archiveTodayBtn" class="card rounded-2xl p-4 w-full flex items-center justify-center gap-2 text-white font-semibold hover:border-accent transition">
-          <i class="fa-solid fa-box-archive text-accent2"></i>
-          Archive Today's Progress
-        </button>
-      </section>
     </div>
 
     <!-- ============ REVENUE & BUSINESS TAB ============ -->
@@ -316,7 +303,7 @@
         <div>
           <p class="text-slate-400 text-sm mb-1">Total Combined Revenue</p>
           <p class="text-4xl font-extrabold text-white sensitive-value" id="totalRevenue">0.00 ر.س</p>
-          <p class="text-xs text-slate-500 mt-1">Sum of Salla sales + all platform + Donut SMP revenue</p>
+          <p class="text-xs text-slate-500 mt-1">Sum of Salla sales + Donut SMP revenue</p>
           <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3 text-sm">
             <div class="flex items-center gap-1.5">
               <span class="text-slate-500">Other Expenses:</span>
@@ -340,22 +327,6 @@
             <p class="font-bold text-white sensitive-value" id="heroSalla">0.00 ر.س</p>
           </div>
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
-            <p class="text-slate-500 text-xs">TikTok</p>
-            <p class="font-bold text-white sensitive-value" id="heroTiktok">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
-            <p class="text-slate-500 text-xs">YouTube</p>
-            <p class="font-bold text-white sensitive-value" id="heroYoutube">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
-            <p class="text-slate-500 text-xs">Instagram</p>
-            <p class="font-bold text-white sensitive-value" id="heroInstagram">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
-            <p class="text-slate-500 text-xs">Snapchat</p>
-            <p class="font-bold text-white sensitive-value" id="heroSnapchat">0.00 ر.س</p>
-          </div>
-          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Donut SMP</p>
             <p class="font-bold text-white sensitive-value" id="heroDonut">0.00 ر.س</p>
           </div>
@@ -375,7 +346,7 @@
           <div id="revenueEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center gap-2 bg-panel2/95 backdrop-blur-sm rounded-xl">
             <i class="fa-solid fa-chart-pie text-3xl text-slate-600"></i>
             <p class="text-sm text-slate-400">No revenue data yet</p>
-            <p class="text-xs text-slate-600 max-w-[220px]">Edit your Salla, Donut SMP, or platform revenue fields below to see the breakdown</p>
+            <p class="text-xs text-slate-600 max-w-[220px]">Edit your Salla or Donut SMP revenue fields below to see the breakdown</p>
           </div>
         </div>
       </section>
@@ -412,24 +383,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="digitalGrid"></div>
       </section>
 
-      <section>
-        <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-layer-group text-accent2 mr-2"></i>Social Platforms</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="platformsGrid"></div>
-      </section>
-
-      <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-line text-accent2 mr-2"></i>Followers Overview</h2>
-        </div>
-        <div class="h-64 relative">
-          <canvas id="followersChart"></canvas>
-          <div id="followersEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center gap-2 bg-panel2/95 backdrop-blur-sm rounded-xl">
-            <i class="fa-solid fa-chart-line text-3xl text-slate-600"></i>
-            <p class="text-sm text-slate-400">No followers data yet</p>
-            <p class="text-xs text-slate-600 max-w-[220px]">Edit your platform follower/subscriber counts above</p>
-          </div>
-        </div>
-      </section>
     </div>
 
     <!-- ============ FITNESS & HEALTH TAB ============ -->
@@ -617,24 +570,7 @@
           <span class="text-sm text-slate-400"><span id="coreCoursesDone">0</span>/<span id="coreCoursesTotal">0</span> courses · <span id="coreCreditsDone">0</span> credit hrs</span>
         </div>
         <p class="text-xs text-slate-500 mb-4"><i class="fa-solid fa-lock text-slate-500 mr-1"></i>Greyed-out / locked courses require their prerequisite(s) to be checked first.</p>
-        <div id="studyPlanWrap" class="space-y-3"></div>
-      </section>
-
-      <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-layer-group text-cyan-300 mr-2"></i>Electives <span class="opacity-60 text-xs">/ المواد العامة والاختيارية</span></h2>
-          <span class="text-sm text-slate-400"><span id="electiveCreditsTotal">0</span> credit hrs</span>
-        </div>
-        <form id="electiveForm" class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
-          <input id="electiveName" type="text" placeholder="Course name" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <select id="electiveType" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
-            <option value="University">University Elective / مادة عامة</option>
-            <option value="Program">Program Elective</option>
-          </select>
-          <input id="electiveCredits" type="number" min="0" step="1" placeholder="Credit hrs" class="sm:col-span-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <button type="submit" class="sm:col-span-5 bg-cyan-600 hover:bg-cyan-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Elective</button>
-        </form>
-        <div id="electiveList" class="space-y-2"></div>
+        <div id="studyPlanWrap" class="space-y-6 overflow-x-auto"></div>
       </section>
 
       <section class="card rounded-2xl p-5">
@@ -662,57 +598,41 @@
 
     </div>
 
-    <!-- ============ CALENDAR & SCHEDULING TAB ============ -->
-    <div class="tab-panel hidden space-y-8" data-tab="calendar">
+    <!-- ============ DAILY LOG: VISUAL HABIT CALENDAR ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="dailyLog">
       <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div class="flex items-center gap-3">
-            <button id="calPrevMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-left"></i></button>
-            <h2 class="font-semibold text-white text-lg" id="calMonthLabel">Month Year</h2>
-            <button id="calNextMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-right"></i></button>
+            <button id="habitPrevMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-left"></i></button>
+            <h2 class="font-semibold text-white text-lg" id="habitMonthLabel">Month Year</h2>
+            <button id="habitNextMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-right"></i></button>
           </div>
-          <button id="calTodayBtn" class="text-xs bg-panel2 border border-border hover:border-accent rounded-lg px-3 py-1.5 text-slate-300">Today</button>
+          <div class="flex items-center gap-3 text-xs text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span>Supplements</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-500 inline-block"></span>Training</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded inline-block" style="background:linear-gradient(135deg,#10b981 50%,#3b82f6 50%)"></span>Both</span>
+          </div>
+          <button id="habitTodayBtn" class="text-xs bg-panel2 border border-border hover:border-accent rounded-lg px-3 py-1.5 text-slate-300">Today</button>
         </div>
         <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[11px] text-slate-500 uppercase">
           <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
         </div>
-        <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
+        <div id="habitGrid" class="grid grid-cols-7 gap-1.5"></div>
       </section>
 
       <section class="card rounded-2xl p-5">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-list-check text-accent2 mr-2"></i>Tasks for <span id="calSelectedDateLabel">selected day</span></h2>
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-list-check text-accent2 mr-2"></i>Habits for <span id="habitSelectedDateLabel">selected day</span></h2>
         </div>
-        <form id="calTaskForm" class="flex gap-2 mb-4">
-          <input id="calTaskInput" type="text" placeholder="Schedule a task on the selected date..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
-          <button type="submit" class="bg-accent hover:bg-indigo-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
-        </form>
-        <p class="text-xs text-slate-500 mb-3">Scheduled tasks are automatically added to the Kanban board (KFU CIS 0922 tab) and stay linked to this date.</p>
-        <div id="calTaskList" class="space-y-2"></div>
-      </section>
-    </div>
-
-    <!-- ============ DAILY LOG TAB ============ -->
-    <div class="tab-panel hidden space-y-8" data-tab="dailyLog">
-      <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-clock-rotate-left text-accent2 mr-2"></i>Daily Log</h2>
-          <span class="text-xs text-slate-500">Archived days: <span id="dailyLogCount">0</span></span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs text-slate-500 uppercase border-b border-border">
-                <th class="py-2 px-3">Date</th>
-                <th class="py-2 px-3">Water (ml)</th>
-                <th class="py-2 px-3">Steps</th>
-                <th class="py-2 px-3">Workout Split Completed</th>
-                <th class="py-2 px-3">Tasks Finished</th>
-                <th class="py-2 px-3"></th>
-              </tr>
-            </thead>
-            <tbody id="dailyLogBody"></tbody>
-          </table>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-xs font-semibold text-emerald-300 uppercase tracking-wide mb-2"><i class="fa-solid fa-pills mr-1"></i>Supplements</h3>
+            <div id="habitSupplementsList" class="space-y-2"></div>
+          </div>
+          <div>
+            <h3 class="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-2"><i class="fa-solid fa-dumbbell mr-1"></i>Training</h3>
+            <div id="habitTrainingList" class="space-y-2"></div>
+          </div>
         </div>
       </section>
     </div>
@@ -729,393 +649,21 @@
   // =====================================================================
   // 🔥 FIREBASE SETUP
   // =====================================================================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-  import { getAnalytics, isSupported as analyticsIsSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
   import {
-    getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-    signOut, setPersistence, browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    auth, firebaseReady,
+    onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+  } from "./js/firebase.js";
+  import { createHabitCalendar } from "./js/calendar.js";
   import {
-    getFirestore, doc, setDoc, onSnapshot, serverTimestamp, enableIndexedDbPersistence
-  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    SPLIT_ORDER, GRADE_POINTS, STUDY_PLAN, allPlanCourses, defaultData,
+    todayStr, normalizeData, loadLocalData, data, setData, applyDailyResets,
+    save, attachCloudSync, onRemoteUpdate, setCurrentUser, clearCurrentUser
+  } from "./js/state.js";
 
   // =====================================================================
-  // 🔥 FIREBASE PROJECT CONFIG (creator-dashboard-466ad)
+  // 📦 APP STATE (see js/state.js) — local-only UI preference key
   // =====================================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyCIiTE42jmrnILw6sLo9xJt20Gjc49HUfM",
-    authDomain: "creator-dashboard-466ad.firebaseapp.com",
-    projectId: "creator-dashboard-466ad",
-    storageBucket: "creator-dashboard-466ad.firebasestorage.app",
-    messagingSenderId: "104966782824",
-    appId: "1:104966782824:web:83f6eca6b832f04dd620dd",
-    measurementId: "G-F00HK5PDM7"
-  };
-  // =====================================================================
-
-  // ---------- Graceful Firebase setup / error handling ----------
-  function looksUnconfigured(cfg){
-    if(!cfg || !cfg.apiKey || !cfg.projectId) return true;
-    return /PASTE_YOUR/i.test(cfg.apiKey) || /PASTE_YOUR/i.test(cfg.projectId);
-  }
-
-  let firebaseApp = null, auth = null, db = null, firebaseReady = false;
-  const setupModal = document.getElementById('setupModal');
-  const setupModalMessage = document.getElementById('setupModalMessage');
-
-  function showSetupModal(message){
-    if(message) setupModalMessage.textContent = message;
-    setupModal.classList.remove('hidden');
-  }
-  document.getElementById('setupModalDismiss').addEventListener('click', () => {
-    setupModal.classList.add('hidden');
-    // Local-only mode: skip auth gate entirely and show the app straight from localStorage.
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    data = loadLocalData();
-    applyDailyResets();
-    renderAll();
-    toast("Working in local-only mode (no cloud sync)", "fa-hard-drive");
-  });
-
-  try {
-    if(looksUnconfigured(firebaseConfig)){
-      throw Object.assign(new Error("Firebase config keys are still placeholders."), { code: 'config/placeholder' });
-    }
-    firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-    db = getFirestore(firebaseApp);
-    setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
-    enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
-    analyticsIsSupported().then(supported => {
-      if(supported){ try { getAnalytics(firebaseApp); } catch(e){ console.warn("Analytics init skipped:", e); } }
-    }).catch(() => {});
-    firebaseReady = true;
-  } catch(err){
-    console.warn("Firebase initialization issue:", err);
-    const msg = err && err.code === 'config/placeholder'
-      ? "Your Firebase configuration keys are still placeholders — paste your project's real keys to enable cloud sync."
-      : `Firebase failed to initialize (${err && err.code ? err.code : 'unknown error'}). The dashboard will run in local-only mode.`;
-    showSetupModal(msg);
-  }
-
-  // =====================================================================
-  // 📦 APP STATE & LOCAL STORAGE FALLBACK
-  // =====================================================================
-  const STORAGE_KEY = "creatorDashboardData_v2";
-  const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
   const PRIVACY_KEY = "creatorDashboardPrivacyMode";
-  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'calendar', 'dailyLog'];
-  const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
-  const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 'C': 3, 'D+': 2.5, 'D': 2, 'F': 0 };
-
-  // KFU CIS (0922) bilingual study plan — grouped by Year → Semester, with prerequisite codes.
-  const STUDY_PLAN = [
-    { year: 1, semesters: [
-      { label: 'Semester 1', courses: [
-        { code: '0814132', en: 'Physics', ar: 'فيزياء', credits: 3, pre: [] },
-        { code: '0827111', en: 'Calculus', ar: 'التفاضل والتكامل', credits: 3, pre: [] },
-        { code: '0921110', en: 'Intro to Computing', ar: 'مقدمة علم الحاسب', credits: 3, pre: [] },
-        { code: '1722111', en: 'Academic English', ar: 'اللغة الإنجليزية الأكاديمية', credits: 3, pre: [] },
-        { code: '1900101', en: 'Creed and Doctrines', ar: 'العقيدة والمذاهب', credits: 2, pre: [] },
-      ]},
-      { label: 'Semester 2', courses: [
-        { code: '0603103', en: 'Business & Accounting', ar: 'إدارة المحاسبة والأعمال', credits: 3, pre: ['1722111'] },
-        { code: '0826152', en: 'Biology', ar: 'علم الأحياء', credits: 3, pre: [] },
-        { code: '0827121', en: 'Probability & Statistics', ar: 'الإحتمالات والإحصاء', credits: 3, pre: ['0827111'] },
-        { code: '0827122', en: 'Discrete Mathematics', ar: 'الرياضيات المنفصلة', credits: 3, pre: ['0827111'] },
-        { code: '0921120', en: 'Fundamentals of Programming', ar: 'مبادئ البرمجة', credits: 3, pre: ['0921110'] },
-      ]},
-    ]},
-    { year: 2, semesters: [
-      { label: 'Semester 1', courses: [
-        { code: '0921210', en: 'OOP 1', ar: 'البرمجة كائنية التوجه 1', credits: 3, pre: ['0921120'] },
-        { code: '0921211', en: 'Data Structure & Algorithms', ar: 'هيكلة البيانات والخوارزميات', credits: 3, pre: ['0921120', '0827122'] },
-        { code: '0921212', en: 'Linear Algebra', ar: 'الجبر الخطي', credits: 3, pre: ['0827122'] },
-        { code: '0924214', en: 'Fund. of Computer Networks', ar: 'أساسيات شبكات الحاسب', credits: 3, pre: ['0921110'] },
-        { code: '1900102', en: 'Islamic Culture', ar: 'الثقافة الإسلامية', credits: 2, pre: [] },
-      ]},
-      { label: 'Semester 2', courses: [
-        { code: '0922221', en: 'Requirements Engineering', ar: 'هندسة متطلبات البرمجيات', credits: 3, pre: ['0921210'] },
-        { code: '0922222', en: 'Database Concepts & Design', ar: 'مفاهيم وتصميم قواعد البيانات', credits: 3, pre: ['0921211'] },
-        { code: '0923223', en: 'Digital Logic & Design', ar: 'تصميم المنطق الرقمي', credits: 3, pre: ['0814132'] },
-        { code: '0922224', en: 'Rapid Application Development', ar: 'التطوير السريع للتطبيقات', credits: 3, pre: ['0921210'] },
-        { code: '1900-UE1', en: 'University Elective 1', ar: 'متطلب جامعة اختياري 1', credits: 2, pre: [] },
-      ]},
-    ]},
-    { year: 3, semesters: [
-      { label: 'Semester 1', courses: [
-        { code: '0922310', en: 'Organization & Management', ar: 'تنظيم الأعمال والإدارة', credits: 3, pre: ['0603103'] },
-        { code: '0922311', en: 'System Analysis & Design', ar: 'تحليل وتصميم نظم المعلومات', credits: 3, pre: ['0922221'] },
-        { code: '0922312', en: 'Technical Reports', ar: 'كتابة التقارير التقنية', credits: 2, pre: ['1722111'] },
-        { code: '0923313', en: 'Computer Org & Architecture', ar: 'معمارية وتنظيم الحاسب', credits: 3, pre: ['0923223'] },
-        { code: '0922314', en: 'Web-based Systems', ar: 'النظم المبنية على الويب', credits: 3, pre: ['0922224'] },
-      ]},
-      { label: 'Semester 2', courses: [
-        { code: '0921320', en: 'Computer Security', ar: 'أمن الحاسب', credits: 3, pre: ['0924214'] },
-        { code: '0921321', en: 'Operating Systems', ar: 'نظم التشغيل', credits: 3, pre: ['0923313'] },
-        { code: '0922322', en: 'Professional Responsibility', ar: 'المسؤولية المهنية', credits: 2, pre: ['0922312', '0826152'] },
-        { code: '0922323', en: 'Database Management Systems', ar: 'إدارة وتقييم قواعد البيانات', credits: 3, pre: ['0921212', '0922222'] },
-        { code: '0922324', en: 'IT Project Management', ar: 'إدارة مشروع تقنية المعلومات', credits: 3, pre: ['0922311'] },
-      ]},
-      { label: 'Summer', courses: [
-        { code: '0922330', en: 'Practical Co-op Training', ar: 'التدريب التعاوني العملي', credits: 0, pre: [], creditPre: 95, gradable: false },
-      ]},
-    ]},
-    { year: 4, semesters: [
-      { label: 'Semester 1', courses: [
-        { code: '0922410', en: 'Project Proposal', ar: 'مقترح مشروع', credits: 1, pre: [] },
-        { code: '0922411', en: 'Info Security & Assurance', ar: 'أمن وتوكيد المعلومات', credits: 3, pre: ['0827121', '0921320'] },
-        { code: '0922412', en: 'Enterprise Systems', ar: 'النظم المؤسسية', credits: 3, pre: ['0922310'] },
-        { code: '1900-UE2', en: 'University Elective 2', ar: 'متطلب جامعة اختياري 2', credits: 2, pre: [] },
-        { code: '0924-PE1', en: 'Program Elective 1', ar: 'متطلب تخصص اختياري 1', credits: 3, pre: [] },
-      ]},
-      { label: 'Semester 2', courses: [
-        { code: '0922420', en: 'Project Implementation', ar: 'تنفيذ مشروع', credits: 2, pre: ['0922410'] },
-        { code: '0922421', en: 'Selected Topics in IS', ar: 'موضوعات مختارة في نظم المعلومات', credits: 3, pre: ['0922410'] },
-        { code: '0922422', en: 'Electronic Business', ar: 'الأعمال الإلكترونية', credits: 3, pre: ['0922310'] },
-        { code: '0924-PE2', en: 'Program Elective 2', ar: 'متطلب تخصص اختياري 2', credits: 3, pre: [] },
-        { code: '0924-PE3', en: 'Program Elective 3', ar: 'متطلب تخصص اختياري 3', credits: 3, pre: [] },
-      ]},
-    ]},
-  ];
-
-  function allPlanCourses(){
-    const out = [];
-    STUDY_PLAN.forEach(y => y.semesters.forEach(s => s.courses.forEach(c => out.push(c))));
-    return out;
-  }
-
-  const defaultData = {
-    activeTab: 'overview',
-    expenses: 0,
-    expensesLog: [],
-    salla: { sales: 0, fees: 0, orders: 0, aov: 0, refunds: 0, usernamesStock: 0 },
-    donutSmp: { revenue: 0, spawners: 0, shulkers: 0 },
-    platforms: {
-      tiktok:    { followers: 0, views: 0, revenue: 0, posts: 0 },
-      youtube:   { subscribers: 0, views: 0, revenue: 0, videos: 0 },
-      instagram: { followers: 0, views: 0, revenue: 0, reels: 0 },
-      snapchat:  { subscribers: 0, views: 0, revenue: 0, spotlights: 0 }
-    },
-    water: { ml: 0, goal: 3500, lastDate: "" },
-    steps: { count: 0, goal: 10000, lastDate: "" },
-    supplements: {
-      list: ["Vitamin D3", "Zinc", "Magnesium", "Omega-3"],
-      checked: {},
-      lastDate: ""
-    },
-    workout: {
-      activeSplit: "Push",
-      status: {
-        Push: { completed: false, completedAt: null },
-        Pull: { completed: false, completedAt: null },
-        Legs: { completed: false, completedAt: null }
-      },
-      exercises: { Push: [], Pull: [], Legs: [] },
-      cycles: []
-    },
-    cardio: { sessions: [] },
-    projects: {
-      academic: [],
-      srsUml: [],
-      python: []
-    },
-    academicModule: {
-      kanban: { pending: [], inProgress: [], completed: [] },
-      completedCourses: {}, // { courseCode: true } — completed study-plan courses (public, no grades)
-      electives: [],   // { id, name, type, credits }
-      grades: {},      // { courseKey: 'A' } — PIN protected
-      pinHash: null     // simple obfuscated PIN (not cryptographically secure)
-    },
-    calendar: {
-      tasks: [] // { id, text, date: 'YYYY-MM-DD', done, kanbanTaskId }
-    },
-    dailyLog: []
-  };
-
-  function todayStr(){
-    return new Date().toISOString().slice(0,10);
-  }
-
-  // Normalizes an arbitrary parsed object (from localStorage OR Firestore) into the current schema.
-  function normalizeData(parsed){
-    try {
-      if(!parsed) return structuredClone(defaultData);
-      const merged = structuredClone(defaultData);
-
-      merged.activeTab = TABS.includes(parsed.activeTab) ? parsed.activeTab : 'overview';
-      merged.expenses = Number(parsed.expenses) || 0;
-      merged.expensesLog = Array.isArray(parsed.expensesLog) ? parsed.expensesLog : [];
-      merged.salla = Object.assign({}, merged.salla, parsed.salla);
-      merged.donutSmp = Object.assign({}, merged.donutSmp, parsed.donutSmp);
-
-      for(const k in merged.platforms){
-        if(parsed.platforms && parsed.platforms[k]) Object.assign(merged.platforms[k], parsed.platforms[k]);
-      }
-
-      merged.water.ml = Number(parsed.water && parsed.water.ml) || 0;
-      merged.water.lastDate = (parsed.water && parsed.water.lastDate) || "";
-
-      merged.steps.count = Number(parsed.steps && parsed.steps.count) || 0;
-      merged.steps.lastDate = (parsed.steps && parsed.steps.lastDate) || "";
-
-      merged.cardio = { sessions: (parsed.cardio && Array.isArray(parsed.cardio.sessions)) ? parsed.cardio.sessions : [] };
-
-      merged.supplements = Object.assign({}, merged.supplements, parsed.supplements);
-      if(!Array.isArray(merged.supplements.list) || !merged.supplements.list.length) merged.supplements.list = defaultData.supplements.list.slice();
-      if(!merged.supplements.checked || typeof merged.supplements.checked !== 'object') merged.supplements.checked = {};
-
-      if(parsed.workout){
-        if(parsed.workout.status){
-          SPLIT_ORDER.forEach(s => {
-            if(parsed.workout.status[s]) merged.workout.status[s] = Object.assign({}, merged.workout.status[s], parsed.workout.status[s]);
-          });
-          if(parsed.workout.exercises){
-            SPLIT_ORDER.forEach(s => {
-              if(Array.isArray(parsed.workout.exercises[s])) merged.workout.exercises[s] = parsed.workout.exercises[s];
-            });
-          }
-          if(Array.isArray(parsed.workout.cycles)) merged.workout.cycles = parsed.workout.cycles;
-          if(SPLIT_ORDER.includes(parsed.workout.activeSplit)) merged.workout.activeSplit = parsed.workout.activeSplit;
-        } else if(parsed.workout.logs){
-          SPLIT_ORDER.forEach(s => {
-            if(Array.isArray(parsed.workout.logs[s])) merged.workout.exercises[s] = parsed.workout.logs[s];
-          });
-        }
-      }
-
-      if(parsed.projects){
-        merged.projects.academic = Array.isArray(parsed.projects.academic) ? parsed.projects.academic : [];
-        merged.projects.srsUml = Array.isArray(parsed.projects.srsUml) ? parsed.projects.srsUml : [];
-        merged.projects.python = Array.isArray(parsed.projects.python) ? parsed.projects.python : [];
-      } else {
-        const legacy = [];
-        if(Array.isArray(parsed.todos)) legacy.push(...parsed.todos);
-        if(Array.isArray(parsed.academicTasks)) legacy.push(...parsed.academicTasks);
-        merged.projects.academic = legacy;
-      }
-
-      merged.dailyLog = Array.isArray(parsed.dailyLog) ? parsed.dailyLog : [];
-
-      if(parsed.academicModule){
-        const am = parsed.academicModule;
-        if(am.kanban){
-          ['pending','inProgress','completed'].forEach(k => {
-            if(Array.isArray(am.kanban[k])) merged.academicModule.kanban[k] = am.kanban[k];
-          });
-        }
-        const completedSrc = am.completedCourses || am.coreCourses; // migrate legacy field name
-        if(completedSrc && typeof completedSrc === 'object') merged.academicModule.completedCourses = completedSrc;
-        if(Array.isArray(am.electives)) merged.academicModule.electives = am.electives;
-        if(am.grades && typeof am.grades === 'object') merged.academicModule.grades = am.grades;
-        if(am.pinHash) merged.academicModule.pinHash = am.pinHash;
-      }
-
-      if(parsed.calendar && Array.isArray(parsed.calendar.tasks)) merged.calendar.tasks = parsed.calendar.tasks;
-
-      return merged;
-    } catch(e){
-      console.warn("Failed to normalize data, using defaults", e);
-      return structuredClone(defaultData);
-    }
-  }
-
-  function loadLocalData(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-      if(!raw) return structuredClone(defaultData);
-      return normalizeData(JSON.parse(raw));
-    } catch(e){
-      console.warn("Failed to load local data, using defaults", e);
-      return structuredClone(defaultData);
-    }
-  }
-
-  let data = structuredClone(defaultData);
-
-  function applyDailyResets(){
-    const today = todayStr();
-    let changed = false;
-    if(data.water.lastDate !== today){ data.water.ml = 0; data.water.lastDate = today; changed = true; }
-    if(data.steps.lastDate !== today){ data.steps.count = 0; data.steps.lastDate = today; changed = true; }
-    if(data.supplements.lastDate !== today){ data.supplements.checked = {}; data.supplements.lastDate = today; changed = true; }
-    if(changed) save();
-  }
-
-  // ---------- CLOUD SYNC (Firestore, scoped to users/{uid}) ----------
-  let currentUser = null;
-  let unsubscribeSnapshot = null;
-  let lastPushedJson = null;
-  let cloudSaveTimer = null;
-
-  function setSyncStatus(state){
-    const icon = document.getElementById('syncIcon');
-    const label = document.getElementById('syncLabel');
-    if(!icon || !label) return;
-    if(state === 'syncing'){
-      icon.className = "fa-solid fa-arrows-rotate fa-spin text-accent2";
-      label.textContent = "Syncing…";
-    } else if(state === 'offline'){
-      icon.className = "fa-solid fa-cloud-slash text-amber-400";
-      label.textContent = "Offline (local only)";
-    } else {
-      icon.className = "fa-solid fa-cloud-arrow-up text-accent2";
-      label.textContent = "Synced";
-    }
-  }
-
-  function attachCloudSync(uid){
-    if(!firebaseReady) return;
-    if(unsubscribeSnapshot) unsubscribeSnapshot();
-    const ref = doc(db, 'users', uid);
-    unsubscribeSnapshot = onSnapshot(ref, (snap) => {
-      if(!snap.exists()){
-        lastPushedJson = JSON.stringify(data);
-        setDoc(ref, { state: data, updatedAt: serverTimestamp() }).catch(err => {
-          console.warn("Initial cloud push failed (working offline):", err);
-          setSyncStatus('offline');
-        });
-        setSyncStatus('synced');
-        return;
-      }
-      const remoteState = snap.data().state;
-      if(!remoteState) return;
-      const remoteJson = JSON.stringify(remoteState);
-      if(remoteJson === lastPushedJson) { setSyncStatus('synced'); return; }
-      // Real-time update from another tab/device — merge and re-render instantly.
-      data = normalizeData(remoteState);
-      lastPushedJson = remoteJson;
-      applyDailyResets();
-      renderAll();
-      setSyncStatus('synced');
-    }, (err) => {
-      console.warn("Realtime sync error — continuing with local/offline data:", err);
-      setSyncStatus('offline');
-    });
-  }
-
-  function pushToCloud(){
-    if(!firebaseReady || !currentUser) return;
-    setSyncStatus('syncing');
-    clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(() => {
-      lastPushedJson = JSON.stringify(data);
-      setDoc(doc(db, 'users', currentUser.uid), { state: data, updatedAt: serverTimestamp() })
-        .then(() => setSyncStatus('synced'))
-        .catch(err => {
-          console.warn("Cloud sync failed — data safely stored locally:", err);
-          setSyncStatus('offline');
-        });
-    }, 350);
-  }
-
-  function save(){
-    // Always persist locally first (offline fallback), then push to the cloud when signed in.
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    pushToCloud();
-  }
-
   function toast(msg, icon){
     const el = document.createElement('div');
     el.className = "toast bg-panel2 border border-border rounded-lg px-4 py-2 text-sm text-white shadow-lg flex items-center gap-2";
@@ -1128,6 +676,25 @@
     n = Number(n) || 0;
     return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + " ر.س";
   }
+
+  // ---------- VISUAL HABIT CALENDAR (Daily Log) — modularized in js/calendar.js ----------
+  const habitCalendar = createHabitCalendar({
+    getData: () => data,
+    save: () => save(),
+    toast,
+    emptyStateEl: (icon, msg) => emptyStateEl(icon, msg),
+    els: {
+      grid: () => document.getElementById('habitGrid'),
+      monthLabel: () => document.getElementById('habitMonthLabel'),
+      selectedDateLabel: () => document.getElementById('habitSelectedDateLabel'),
+      supplementsList: () => document.getElementById('habitSupplementsList'),
+      trainingList: () => document.getElementById('habitTrainingList'),
+      prevMonthBtn: () => document.getElementById('habitPrevMonth'),
+      nextMonthBtn: () => document.getElementById('habitNextMonth'),
+      todayBtn: () => document.getElementById('habitTodayBtn'),
+    }
+  });
+  function renderHabitCalendar(){ habitCalendar.render(); }
 
   // ---------- GENERIC INLINE-EDIT MODAL (Kanban / Expenses / Electives CRUD) ----------
   const editModal = document.getElementById('editModal');
@@ -1261,10 +828,6 @@
   }
 
   async function handleAuthSubmit(){
-    if(!firebaseReady){
-      showSetupModal("Firebase isn't configured yet, so sign-in is unavailable. Paste your keys or continue in local-only mode.");
-      return;
-    }
     const email = authEmail.value.trim();
     const password = authPassword.value;
     if(!email || !password){
@@ -1283,10 +846,6 @@
       authError.classList.add('hidden');
     } catch(err){
       console.warn("Auth error:", err);
-      if(err && (err.code === 'auth/api-key-not-valid' || err.code === 'auth/invalid-api-key')){
-        firebaseReady = false;
-        showSetupModal(friendlyAuthError(err));
-      }
       authError.textContent = friendlyAuthError(err);
       authError.classList.remove('hidden');
     } finally {
@@ -1300,46 +859,32 @@
   authEmail.addEventListener('keydown', e => { if(e.key === 'Enter') authPassword.focus(); });
 
   document.getElementById('lockBtn').addEventListener('click', () => {
-    if(!firebaseReady){
-      // local-only mode: just go back to the auth/setup screen
-      app.classList.add('hidden');
-      authScreen.classList.remove('hidden');
-      return;
-    }
     signOut(auth).catch(err => console.warn("Sign out failed:", err));
   });
 
-  if(firebaseReady){
-    try {
-      onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        if(user){
-          authScreen.classList.add('hidden');
-          app.classList.remove('hidden');
-          data = loadLocalData(); // instant local render (works offline), cloud snapshot reconciles right after
-          applyDailyResets();
-          renderAll();
-          attachCloudSync(user.uid);
-        } else {
-          if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-          lastPushedJson = null;
-          app.classList.add('hidden');
-          authScreen.classList.remove('hidden');
-          authEmail.value = "";
-          authPassword.value = "";
-          setAuthMode('signin');
-        }
-      }, (err) => {
-        console.warn("Auth state listener error:", err);
-        firebaseReady = false;
-        showSetupModal(friendlyAuthError(err));
-      });
-    } catch(err){
-      console.warn("Failed to attach auth listener:", err);
-      firebaseReady = false;
-      showSetupModal(friendlyAuthError(err));
+  onRemoteUpdate(renderAll);
+
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      setCurrentUser(user.uid);
+      authScreen.classList.add('hidden');
+      app.classList.remove('hidden');
+      setData(loadLocalData()); // instant local render (works offline), cloud snapshot reconciles right after
+      applyDailyResets();
+      renderAll();
+      attachCloudSync(user.uid);
+    } else {
+      clearCurrentUser();
+      app.classList.add('hidden');
+      authScreen.classList.remove('hidden');
+      authEmail.value = "";
+      authPassword.value = "";
+      setAuthMode('signin');
     }
-  }
+  }, (err) => {
+    console.warn("Auth state listener error:", err);
+    toast("Connection issue with Firebase — retrying automatically", "fa-triangle-exclamation");
+  });
 
   // ---------- HEADER DATE ----------
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -1369,11 +914,9 @@
     } else if(tab === 'revenue'){
       renderSalla();
       renderDigitalAssets();
-      renderPlatforms();
       renderHero();
       renderExpenses();
       if(revenueChart) revenueChart.resize();
-      if(followersChart) followersChart.resize();
     } else if(tab === 'fitness'){
       renderWater();
       renderSteps();
@@ -1388,17 +931,36 @@
     } else if(tab === 'academic'){
       renderKanban();
       renderStudyPlan();
-      renderElectives();
       renderGpaSection();
-    } else if(tab === 'calendar'){
-      renderCalendar();
     } else if(tab === 'dailyLog'){
-      renderDailyLog();
+      renderHabitCalendar();
     }
   }
 
   document.querySelectorAll('.tab-btn-nav').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // ---------- HAMBURGER MENU / SIDEBAR DRAWER ----------
+  const sidebarDrawer = document.getElementById('sidebarDrawer');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  function openSidebar(){
+    sidebarDrawer.classList.remove('-translate-x-full');
+    sidebarOverlay.classList.remove('hidden');
+  }
+  function closeSidebar(){
+    sidebarDrawer.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
+  }
+  document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
+  document.getElementById('sidebarCloseBtn').addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('.sidebar-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+      closeSidebar();
+    });
   });
 
   // ---------- EDITABLE FIELD FACTORY ----------
@@ -1440,17 +1002,13 @@
     const salla = Number(data.salla.sales)||0;
     const sallaFees = Number(data.salla.fees)||0;
     const sallaNet = salla - sallaFees;
-    const tiktok = Number(data.platforms.tiktok.revenue)||0;
-    const youtube = Number(data.platforms.youtube.revenue)||0;
-    const instagram = Number(data.platforms.instagram.revenue)||0;
-    const snapchat = Number(data.platforms.snapchat.revenue)||0;
     const donut = Number(data.donutSmp.revenue)||0;
-    const total = salla + tiktok + youtube + instagram + snapchat + donut;
+    const total = salla + donut;
     const manualExpenses = Number(data.expenses)||0;
     const loggedExpenses = computeExpenseLogTotal();
     const expenses = manualExpenses + loggedExpenses + sallaFees;
     const net = total - manualExpenses - loggedExpenses - sallaFees;
-    return { salla, sallaFees, sallaNet, tiktok, youtube, instagram, snapchat, donut, total, manualExpenses, loggedExpenses, expenses, net };
+    return { salla, sallaFees, sallaNet, donut, total, manualExpenses, loggedExpenses, expenses, net };
   }
 
   // ---------- SALLA CARDS ----------
@@ -1658,78 +1216,6 @@
     digitalGrid.append(card);
   }
 
-  // ---------- PLATFORM CARDS ----------
-  const platformsMeta = [
-    { key: 'tiktok', name: 'TikTok', icon: 'fa-brands fa-tiktok', color: 'text-pink-400', metrics: [
-      { key: 'followers', label: 'Followers', money:false },
-      { key: 'views', label: 'Views', money:false },
-      { key: 'posts', label: 'Posts', money:false },
-      { key: 'revenue', label: 'Revenue', money:true },
-    ]},
-    { key: 'youtube', name: 'YouTube Shorts', icon: 'fa-brands fa-youtube', color: 'text-red-400', metrics: [
-      { key: 'subscribers', label: 'Subscribers', money:false },
-      { key: 'views', label: 'Views', money:false },
-      { key: 'videos', label: 'Shorts', money:false },
-      { key: 'revenue', label: 'Revenue', money:true },
-    ]},
-    { key: 'instagram', name: 'Instagram Reels', icon: 'fa-brands fa-instagram', color: 'text-fuchsia-400', metrics: [
-      { key: 'followers', label: 'Followers', money:false },
-      { key: 'views', label: 'Views', money:false },
-      { key: 'reels', label: 'Reels', money:false },
-      { key: 'revenue', label: 'Revenue', money:true },
-    ]},
-    { key: 'snapchat', name: 'Snapchat Spotlight', icon: 'fa-solid fa-ghost', color: 'text-yellow-300', metrics: [
-      { key: 'subscribers', label: 'Subscribers', money:false },
-      { key: 'views', label: 'Views', money:false },
-      { key: 'spotlights', label: 'Spotlights', money:false },
-      { key: 'revenue', label: 'Revenue', money:true },
-    ]},
-  ];
-
-  const platformsGrid = document.getElementById('platformsGrid');
-
-  function renderPlatforms(){
-    platformsGrid.innerHTML = "";
-    platformsMeta.forEach(p => {
-      const card = document.createElement('div');
-      card.className = "card rounded-xl p-4";
-      const header = document.createElement('div');
-      header.className = "flex items-center gap-2 mb-3";
-      header.innerHTML = `<i class="${p.icon} ${p.color} text-lg"></i><span class="font-semibold text-white">${p.name}</span>`;
-      card.append(header);
-
-      const grid = document.createElement('div');
-      grid.className = "grid grid-cols-2 gap-3";
-      p.metrics.forEach(m => {
-        const box = document.createElement('div');
-        box.className = "bg-panel2 rounded-lg p-2 border border-border";
-        const lbl = document.createElement('p');
-        lbl.className = "text-[11px] text-slate-500 mb-0.5";
-        lbl.textContent = m.label;
-        const valWrap = document.createElement('p');
-        valWrap.className = "text-sm font-bold text-white flex items-baseline gap-1";
-        const span = editableField(m.label, data.platforms[p.key][m.key], (num) => {
-          data.platforms[p.key][m.key] = num;
-          save();
-          renderHero();
-          renderRevenueChart();
-          renderFollowersChart();
-        }, m.money);
-        valWrap.append(span);
-        if(m.money){
-          const unit = document.createElement('span');
-          unit.className = "text-[10px] text-slate-400 font-normal";
-          unit.textContent = "ر.س";
-          valWrap.append(unit);
-        }
-        box.append(lbl, valWrap);
-        grid.append(box);
-      });
-      card.append(grid);
-      platformsGrid.append(card);
-    });
-  }
-
   // ---------- HERO / TOTAL REVENUE ----------
   const totalExpensesEl = document.getElementById('totalExpenses');
   totalExpensesEl.addEventListener('blur', () => {
@@ -1747,10 +1233,6 @@
 
     document.getElementById('totalRevenue').textContent = fmtMoney(t.total);
     document.getElementById('heroSalla').textContent = fmtMoney(t.salla);
-    document.getElementById('heroTiktok').textContent = fmtMoney(t.tiktok);
-    document.getElementById('heroYoutube').textContent = fmtMoney(t.youtube);
-    document.getElementById('heroInstagram').textContent = fmtMoney(t.instagram);
-    document.getElementById('heroSnapchat').textContent = fmtMoney(t.snapchat);
     document.getElementById('heroDonut').textContent = fmtMoney(t.donut);
     document.getElementById('heroSallaNet').textContent = fmtMoney(t.sallaNet);
 
@@ -1768,14 +1250,14 @@
   }
 
   // ---------- CHARTS ----------
-  let revenueChart, followersChart;
+  let revenueChart;
 
   function renderRevenueChart(){
     const ctx = document.getElementById('revenueChart');
-    const labels = ['Salla', 'TikTok', 'YouTube', 'Instagram', 'Snapchat', 'Donut SMP'];
+    const labels = ['Salla', 'Donut SMP'];
     const t = computeRevenueTotals();
-    const values = [t.salla, t.tiktok, t.youtube, t.instagram, t.snapchat, t.donut];
-    const colors = ['#22c55e', '#f472b6', '#f87171', '#e879f9', '#facc15', '#a78bfa'];
+    const values = [t.salla, t.donut];
+    const colors = ['#22c55e', '#a78bfa'];
     const total = values.reduce((a,b) => a+b, 0);
     document.getElementById('revenueEmpty').classList.toggle('hidden', total > 0);
 
@@ -1796,38 +1278,6 @@
               label: (ctx) => `${ctx.label}: ${fmtMoney(ctx.raw)}`
             }
           }
-        }
-      }
-    });
-  }
-
-  function renderFollowersChart(){
-    const ctx = document.getElementById('followersChart');
-    const labels = ['TikTok', 'YouTube', 'Instagram', 'Snapchat'];
-    const values = [
-      Number(data.platforms.tiktok.followers)||0,
-      Number(data.platforms.youtube.subscribers)||0,
-      Number(data.platforms.instagram.followers)||0,
-      Number(data.platforms.snapchat.subscribers)||0,
-    ];
-    const colors = ['#f472b6', '#f87171', '#e879f9', '#facc15'];
-    const total = values.reduce((a,b) => a+b, 0);
-    document.getElementById('followersEmpty').classList.toggle('hidden', total > 0);
-
-    if(followersChart){
-      followersChart.data.datasets[0].data = values;
-      followersChart.update();
-      return;
-    }
-    followersChart = new Chart(ctx, {
-      type: 'bar',
-      data: { labels, datasets: [{ label: 'Followers/Subscribers', data: values, backgroundColor: colors, borderRadius: 8 }] },
-      options: {
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: '#1c2432' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: '#1c2432' }, beginAtZero: true }
         }
       }
     });
@@ -2456,13 +1906,6 @@
     text.textContent = task.text;
     card.append(text);
 
-    if(task.scheduledDate){
-      const dateBadge = document.createElement('p');
-      dateBadge.className = "text-[11px] text-accent2 mb-2";
-      dateBadge.innerHTML = `<i class="fa-solid fa-calendar-day mr-1"></i>${task.scheduledDate}`;
-      card.append(dateBadge);
-    }
-
     const controls = document.createElement('div');
     controls.className = "flex items-center gap-1.5 mt-2";
 
@@ -2503,13 +1946,8 @@
       const arr = kanbanArr(status);
       const idx = arr.findIndex(t => t.id === task.id);
       if(idx >= 0) arr.splice(idx, 1);
-      if(task.calendarTaskId){
-        const ci = data.calendar.tasks.findIndex(t => t.id === task.calendarTaskId);
-        if(ci >= 0) data.calendar.tasks.splice(ci, 1);
-      }
       save();
       renderKanban();
-      renderCalendar();
     });
     controls.append(del);
 
@@ -2592,80 +2030,90 @@
     const allCourses = allPlanCourses();
 
     STUDY_PLAN.forEach(yearBlock => {
-      const details = document.createElement('details');
-      details.className = "bg-panel2/40 border border-border rounded-xl overflow-hidden";
-      details.open = true;
-      const summary = document.createElement('summary');
-      summary.className = "cursor-pointer px-4 py-3 font-semibold text-white flex items-center gap-2";
-      summary.innerHTML = `<i class="fa-solid fa-layer-group text-indigo-300"></i>Year ${yearBlock.year} <span class="opacity-60 text-xs font-normal">/ السنة ${yearBlock.year}</span>`;
-      details.append(summary);
+      const yearWrap = document.createElement('div');
 
-      const body = document.createElement('div');
-      body.className = "px-4 pb-4 space-y-4";
+      const yearTitle = document.createElement('h3');
+      yearTitle.className = "font-semibold text-white flex items-center gap-2 mb-2";
+      yearTitle.innerHTML = `<i class="fa-solid fa-layer-group text-indigo-300"></i>Year ${yearBlock.year} <span class="opacity-60 text-xs font-normal">/ السنة ${yearBlock.year}</span>`;
+      yearWrap.append(yearTitle);
+
+      const table = document.createElement('table');
+      table.className = "w-full text-sm border border-border rounded-xl overflow-hidden";
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr class="bg-panel2 text-left text-xs text-slate-400 uppercase border-b border-border">
+          <th class="py-2 px-3 w-10"></th>
+          <th class="py-2 px-3">Course Code</th>
+          <th class="py-2 px-3">Course Name (English)</th>
+          <th class="py-2 px-3">اسم المقرر (Arabic)</th>
+          <th class="py-2 px-3 text-center">Credit Hrs</th>
+        </tr>`;
+      table.append(thead);
+      const tbody = document.createElement('tbody');
 
       yearBlock.semesters.forEach(sem => {
-        const semWrap = document.createElement('div');
-        const semTitle = document.createElement('h4');
-        semTitle.className = "text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2";
-        semTitle.textContent = sem.label;
-        semWrap.append(semTitle);
-
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+        const semRow = document.createElement('tr');
+        semRow.className = "bg-panel2/60";
+        const semCell = document.createElement('td');
+        semCell.colSpan = 5;
+        semCell.className = "py-1.5 px-3 text-[11px] font-semibold text-accent2 uppercase tracking-wide";
+        semCell.textContent = sem.label;
+        semRow.append(semCell);
+        tbody.append(semRow);
 
         sem.courses.forEach(course => {
           const checked = isCourseCompleted(course.code);
           const locked = !checked && isCourseLocked(course);
           if(checked){ doneCount++; doneCredits += Number(course.credits)||0; }
 
-          const row = document.createElement('button');
-          row.type = "button";
-          row.className = "flex items-start gap-3 text-left border rounded-lg px-3 py-2.5 transition " +
-            (checked ? "border-emerald-400 bg-emerald-500/10" :
-             locked ? "border-border bg-base/40 opacity-60 cursor-not-allowed" :
-             "border-border bg-panel2 hover:border-emerald-400/50");
+          const tr = document.createElement('tr');
+          tr.className = "border-b border-border/60 transition cursor-pointer " +
+            (checked ? "bg-emerald-500/10 hover:bg-emerald-500/15" :
+             locked ? "bg-base/40 opacity-60 cursor-not-allowed" :
+             "hover:bg-panel2/70");
 
+          const tdCheck = document.createElement('td');
+          tdCheck.className = "py-2 px-3";
           const check = document.createElement('span');
-          check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 " +
+          check.className = "w-6 h-6 rounded-md border flex items-center justify-center " +
             (checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
           check.innerHTML = locked ? '<i class="fa-solid fa-lock text-[10px] text-slate-500"></i>' : '<i class="fa-solid fa-check text-xs"></i>';
+          tdCheck.append(check);
 
-          const textWrap = document.createElement('span');
-          textWrap.className = "flex-1 min-w-0";
-          const nameLine = document.createElement('span');
-          nameLine.className = "block text-sm " + (checked ? "text-slate-200" : locked ? "text-slate-500" : "text-slate-300");
-          nameLine.textContent = `[${course.code}] ${course.en}`;
-          const arLine = document.createElement('span');
-          arLine.className = "block text-xs " + (checked ? "text-slate-400" : "text-slate-500");
-          arLine.textContent = course.ar;
-          textWrap.append(nameLine, arLine);
+          const tdCode = document.createElement('td');
+          tdCode.className = "py-2 px-3 font-mono text-xs " + (checked ? "text-emerald-300" : locked ? "text-slate-500" : "text-slate-300");
+          tdCode.textContent = course.code;
 
+          const tdEn = document.createElement('td');
+          tdEn.className = "py-2 px-3 " + (checked ? "text-slate-200" : locked ? "text-slate-500" : "text-slate-300");
+          const enSpan = document.createElement('span');
+          enSpan.textContent = course.en;
+          tdEn.append(enSpan);
           if(locked){
-            const preLine = document.createElement('span');
-            preLine.className = "block text-[11px] text-red-400/80 mt-1";
-            if(course.creditPre){
-              preLine.textContent = `Requires ${course.creditPre} completed credit hours (متطلب سابق: ${course.creditPre} ساعة معتمدة)`;
-            } else {
-              const preNames = course.pre.map(code => {
-                const pc = courseByCode(code);
-                return pc ? `${code}` : code;
-              }).join(', ');
-              preLine.textContent = `متطلب سابق (Prerequisite): ${preNames}`;
-            }
-            textWrap.append(preLine);
+            const preLine = document.createElement('div');
+            preLine.className = "text-[11px] text-red-400/80 mt-0.5";
+            preLine.textContent = course.creditPre
+              ? `Requires ${course.creditPre} completed credit hrs (متطلب سابق: ${course.creditPre} ساعة معتمدة)`
+              : `متطلب سابق (Prerequisite): ${course.pre.join(', ')}`;
+            tdEn.append(preLine);
           } else if(course.pre && course.pre.length){
-            const preLine = document.createElement('span');
-            preLine.className = "block text-[11px] text-slate-500 mt-1";
+            const preLine = document.createElement('div');
+            preLine.className = "text-[11px] text-slate-500 mt-0.5";
             preLine.textContent = `Pre: ${course.pre.join(', ')}`;
-            textWrap.append(preLine);
+            tdEn.append(preLine);
           }
 
-          const credits = document.createElement('span');
-          credits.className = "text-xs text-slate-500 flex-shrink-0 mt-0.5";
-          credits.textContent = course.credits > 0 ? `${course.credits} cr` : '';
-          row.append(check, textWrap, credits);
+          const tdAr = document.createElement('td');
+          tdAr.className = "py-2 px-3 text-right " + (checked ? "text-slate-300" : "text-slate-500");
+          tdAr.dir = "rtl";
+          tdAr.textContent = course.ar;
 
-          row.addEventListener('click', () => {
+          const tdCredits = document.createElement('td');
+          tdCredits.className = "py-2 px-3 text-center text-xs " + (checked ? "text-slate-300" : "text-slate-500");
+          tdCredits.textContent = course.credits > 0 ? course.credits : '—';
+
+          tr.append(tdCheck, tdCode, tdEn, tdAr, tdCredits);
+          tr.addEventListener('click', () => {
             if(locked){
               toast("Locked — complete the prerequisite course(s) first", "fa-lock");
               return;
@@ -2675,97 +2123,18 @@
             renderStudyPlan();
             renderGpaSection();
           });
-          grid.append(row);
+          tbody.append(tr);
         });
-
-        semWrap.append(grid);
-        body.append(semWrap);
       });
 
-      details.append(body);
-      wrap.append(details);
+      table.append(tbody);
+      yearWrap.append(table);
+      wrap.append(yearWrap);
     });
 
     document.getElementById('coreCoursesTotal').textContent = allCourses.length;
     document.getElementById('coreCoursesDone').textContent = doneCount;
     document.getElementById('coreCreditsDone').textContent = doneCredits;
-  }
-
-  // -- Electives (dynamic add) --
-  document.getElementById('electiveForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nameInput = document.getElementById('electiveName');
-    const typeInput = document.getElementById('electiveType');
-    const creditsInput = document.getElementById('electiveCredits');
-    const name = nameInput.value.trim();
-    const credits = parseInt(creditsInput.value, 10) || 0;
-    if(!name){
-      toast("Enter an elective course name", "fa-triangle-exclamation");
-      return;
-    }
-    data.academicModule.electives.push({ id: Date.now() + Math.random().toString(36).slice(2), name, type: typeInput.value, credits });
-    nameInput.value = "";
-    creditsInput.value = "";
-    save();
-    renderElectives();
-  });
-
-  function renderElectives(){
-    const wrap = document.getElementById('electiveList');
-    wrap.innerHTML = "";
-    const list = data.academicModule.electives;
-    if(list.length === 0){
-      wrap.append(emptyStateEl('fa-layer-group', "No electives added yet."));
-    } else {
-      list.forEach((el, idx) => {
-        const row = document.createElement('div');
-        row.className = "flex items-center justify-between gap-3 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
-        const left = document.createElement('div');
-        left.className = "min-w-0";
-        const nameP = document.createElement('p');
-        nameP.className = "text-slate-200 truncate";
-        nameP.textContent = el.name;
-        const metaP = document.createElement('p');
-        metaP.className = "text-xs text-slate-500";
-        metaP.textContent = `${el.type === 'Program' ? 'Program Elective' : 'University Elective / مادة عامة'} · ${el.credits} cr`;
-        left.append(nameP, metaP);
-        const actions = document.createElement('div');
-        actions.className = "flex items-center gap-2 flex-shrink-0";
-        const editBtn = document.createElement('button');
-        editBtn.className = "text-slate-500 hover:text-accent2";
-        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
-        editBtn.addEventListener('click', () => {
-          openEditModal("Edit Elective", [
-            { key: 'name', label: 'Course name', type: 'text', value: el.name },
-            { key: 'type', label: 'Type', type: 'select', value: el.type, options: [
-              { value: 'University', label: 'University Elective / مادة عامة' },
-              { value: 'Program', label: 'Program Elective' }
-            ]},
-            { key: 'credits', label: 'Credit hours', type: 'number', min: '0', value: el.credits }
-          ], (values) => {
-            el.name = values.name.trim() || el.name;
-            el.type = values.type || el.type;
-            el.credits = parseInt(values.credits, 10) || 0;
-            save();
-            renderElectives();
-            renderGpaSection();
-          });
-        });
-        const del = document.createElement('button');
-        del.className = "text-slate-500 hover:text-red-400";
-        del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-        del.addEventListener('click', () => {
-          data.academicModule.electives.splice(idx, 1);
-          save();
-          renderElectives();
-        });
-        actions.append(editBtn, del);
-        row.append(left, actions);
-        wrap.append(row);
-      });
-    }
-    const totalCredits = list.reduce((a,e) => a + (Number(e.credits)||0), 0);
-    document.getElementById('electiveCreditsTotal').textContent = totalCredits;
   }
 
   // -- GPA / Grades (PIN protected) --
@@ -2845,11 +2214,9 @@
   gpaPinInput.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('gpaPinSubmit').click(); });
 
   function gpaGradableCourses(){
-    const completed = allPlanCourses()
+    return allPlanCourses()
       .filter(c => isCourseCompleted(c.code) && c.gradable !== false)
       .map(c => ({ key: c.code, name: `[${c.code}] ${c.en}`, credits: c.credits }));
-    const electives = data.academicModule.electives.map(e => ({ key: 'elective-' + e.id, name: e.name, credits: Number(e.credits)||0 }));
-    return completed.concat(electives);
   }
 
   function computeGpa(){
@@ -2912,270 +2279,6 @@
     });
   }
 
-  // ---------- INTERACTIVE CALENDAR & TASK SCHEDULING ----------
-  let calViewYear = new Date().getFullYear();
-  let calViewMonth = new Date().getMonth(); // 0-11
-  let calSelectedDate = todayStr();
-
-  function dateKey(y, m, d){
-    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  }
-
-  function tasksForDate(dateStr){
-    return data.calendar.tasks.filter(t => t.date === dateStr);
-  }
-
-  function renderCalendar(){
-    const grid = document.getElementById('calGrid');
-    const monthLabel = document.getElementById('calMonthLabel');
-    grid.innerHTML = "";
-
-    const first = new Date(calViewYear, calViewMonth, 1);
-    monthLabel.textContent = first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-
-    const startDow = first.getDay(); // 0 = Sun
-    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
-    const today = todayStr();
-
-    for(let i = 0; i < startDow; i++){
-      grid.append(document.createElement('div'));
-    }
-
-    for(let d = 1; d <= daysInMonth; d++){
-      const ds = dateKey(calViewYear, calViewMonth, d);
-      const dayTasks = tasksForDate(ds);
-      const doneCount = dayTasks.filter(t => t.done).length;
-
-      const cell = document.createElement('button');
-      cell.type = "button";
-      const isToday = ds === today;
-      const isSelected = ds === calSelectedDate;
-      cell.className = "aspect-square rounded-lg border text-sm flex flex-col items-center justify-center gap-0.5 transition relative " +
-        (isSelected ? "border-accent bg-accent/20 text-white" :
-         isToday ? "border-accent2 text-white" :
-         "border-border bg-panel2 text-slate-300 hover:border-accent/50");
-      const num = document.createElement('span');
-      num.textContent = d;
-      cell.append(num);
-      if(dayTasks.length > 0){
-        const dot = document.createElement('span');
-        dot.className = "w-1.5 h-1.5 rounded-full " + (doneCount === dayTasks.length ? "bg-emerald-400" : "bg-amber-400");
-        cell.append(dot);
-      }
-      cell.addEventListener('click', () => {
-        calSelectedDate = ds;
-        renderCalendar();
-      });
-      grid.append(cell);
-    }
-
-    document.getElementById('calSelectedDateLabel').textContent =
-      new Date(calSelectedDate + "T00:00:00").toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-    renderCalTaskList();
-  }
-
-  function renderCalTaskList(){
-    const wrap = document.getElementById('calTaskList');
-    wrap.innerHTML = "";
-    const tasks = tasksForDate(calSelectedDate);
-    if(tasks.length === 0){
-      wrap.append(emptyStateEl('fa-calendar-plus', "No tasks scheduled for this day."));
-      return;
-    }
-    tasks.forEach(task => {
-      const row = document.createElement('div');
-      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
-
-      const check = document.createElement('button');
-      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
-        (task.done ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
-      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
-      check.addEventListener('click', () => {
-        task.done = !task.done;
-        if(task.kanbanTaskId){
-          for(const s of ['pending', 'inProgress', 'completed']){
-            const t = kanbanArr(s).find(kt => kt.id === task.kanbanTaskId);
-            if(t){ moveKanbanTask(t.id, s, task.done ? 'completed' : 'pending'); break; }
-          }
-        }
-        save();
-        renderCalendar();
-      });
-
-      const label = document.createElement('span');
-      label.className = "flex-1 text-sm " + (task.done ? "todo-done" : "text-slate-200");
-      label.textContent = task.text;
-
-      const editBtn = document.createElement('button');
-      editBtn.className = "text-slate-500 hover:text-accent2";
-      editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
-      editBtn.addEventListener('click', () => {
-        openEditModal("Edit Scheduled Task", [
-          { key: 'text', label: 'Task', type: 'text', value: task.text },
-          { key: 'date', label: 'Date', type: 'date', value: task.date }
-        ], (values) => {
-          task.text = values.text.trim() || task.text;
-          if(values.date) task.date = values.date;
-          if(task.kanbanTaskId){
-            for(const s of ['pending', 'inProgress', 'completed']){
-              const t = kanbanArr(s).find(kt => kt.id === task.kanbanTaskId);
-              if(t){ t.text = task.text; t.scheduledDate = task.date; break; }
-            }
-          }
-          save();
-          calSelectedDate = task.date;
-          renderCalendar();
-          renderKanban();
-        });
-      });
-
-      const del = document.createElement('button');
-      del.className = "text-slate-500 hover:text-red-400";
-      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-      del.addEventListener('click', () => {
-        const idx = data.calendar.tasks.findIndex(t => t.id === task.id);
-        if(idx >= 0) data.calendar.tasks.splice(idx, 1);
-        if(task.kanbanTaskId){
-          for(const s of ['pending', 'inProgress', 'completed']){
-            const arr = kanbanArr(s);
-            const ki = arr.findIndex(kt => kt.id === task.kanbanTaskId);
-            if(ki >= 0){ arr.splice(ki, 1); break; }
-          }
-        }
-        save();
-        renderCalendar();
-        renderKanban();
-      });
-
-      row.append(check, label, editBtn, del);
-      wrap.append(row);
-    });
-  }
-
-  document.getElementById('calPrevMonth').addEventListener('click', () => {
-    calViewMonth--;
-    if(calViewMonth < 0){ calViewMonth = 11; calViewYear--; }
-    renderCalendar();
-  });
-  document.getElementById('calNextMonth').addEventListener('click', () => {
-    calViewMonth++;
-    if(calViewMonth > 11){ calViewMonth = 0; calViewYear++; }
-    renderCalendar();
-  });
-  document.getElementById('calTodayBtn').addEventListener('click', () => {
-    const now = new Date();
-    calViewYear = now.getFullYear();
-    calViewMonth = now.getMonth();
-    calSelectedDate = todayStr();
-    renderCalendar();
-  });
-
-  document.getElementById('calTaskForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = document.getElementById('calTaskInput');
-    const text = input.value.trim();
-    if(!text) return;
-    const kanbanTaskId = Date.now() + Math.random().toString(36).slice(2);
-    const calTaskId = Date.now() + Math.random().toString(36).slice(2, 8) + 'c';
-    const isPast = calSelectedDate < todayStr();
-    data.calendar.tasks.push({ id: calTaskId, text, date: calSelectedDate, done: isPast, kanbanTaskId });
-    kanbanArr(isPast ? 'completed' : 'pending').push({ id: kanbanTaskId, text, scheduledDate: calSelectedDate, calendarTaskId: calTaskId });
-    input.value = "";
-    save();
-    renderCalendar();
-    renderKanban();
-    toast("Task scheduled & linked to Kanban board", "fa-calendar-check");
-  });
-
-  // ---------- DAILY LOG (HISTORICAL ARCHIVE) ----------
-  function renderDailyLog(){
-    const tbody = document.getElementById('dailyLogBody');
-    tbody.innerHTML = "";
-    document.getElementById('dailyLogCount').textContent = data.dailyLog.length;
-
-    if(data.dailyLog.length === 0){
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 6;
-      td.append(emptyStateEl('fa-box-archive', "No archived days yet. Use \"Archive Today's Progress\" on the Overview tab."));
-      tr.append(td);
-      tbody.append(tr);
-      return;
-    }
-
-    const rows = data.dailyLog.slice().sort((a,b) => b.date.localeCompare(a.date));
-    rows.forEach(entry => {
-      const idx = data.dailyLog.indexOf(entry);
-      const tr = document.createElement('tr');
-      tr.className = "border-b border-border/60";
-
-      const tdDate = document.createElement('td');
-      tdDate.className = "py-2 px-3 text-slate-200 whitespace-nowrap";
-      tdDate.textContent = new Date(entry.date + "T00:00:00").toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
-
-      const tdWater = document.createElement('td');
-      tdWater.className = "py-2 px-3 text-slate-300";
-      tdWater.textContent = Number(entry.water||0).toLocaleString();
-
-      const tdSteps = document.createElement('td');
-      tdSteps.className = "py-2 px-3 text-slate-300";
-      tdSteps.textContent = Number(entry.steps||0).toLocaleString();
-
-      const tdWorkout = document.createElement('td');
-      tdWorkout.className = "py-2 px-3 text-slate-300";
-      tdWorkout.textContent = (entry.workoutCompleted && entry.workoutCompleted.length) ? entry.workoutCompleted.join(", ") : "—";
-
-      const tdTasks = document.createElement('td');
-      tdTasks.className = "py-2 px-3 text-slate-300";
-      tdTasks.textContent = entry.tasksFinished||0;
-
-      const tdActions = document.createElement('td');
-      tdActions.className = "py-2 px-3 text-right";
-      const del = document.createElement('button');
-      del.className = "text-slate-500 hover:text-red-400";
-      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-      del.addEventListener('click', () => {
-        data.dailyLog.splice(idx, 1);
-        save();
-        renderDailyLog();
-      });
-      tdActions.append(del);
-
-      tr.append(tdDate, tdWater, tdSteps, tdWorkout, tdTasks, tdActions);
-      tbody.append(tr);
-    });
-  }
-
-  function archiveToday(){
-    const dateKey = todayStr();
-    const completedSplits = SPLIT_ORDER.filter(s => data.workout.status[s].completed);
-    const tasksFinished =
-      data.projects.academic.filter(t=>t.done).length +
-      data.projects.srsUml.filter(t=>t.done).length +
-      data.projects.python.filter(t=>t.done).length;
-
-    const entry = {
-      date: dateKey,
-      water: Number(data.water.ml)||0,
-      steps: Number(data.steps.count)||0,
-      workoutCompleted: completedSplits,
-      tasksFinished
-    };
-
-    const existingIdx = data.dailyLog.findIndex(e => e.date === dateKey);
-    if(existingIdx >= 0){
-      data.dailyLog[existingIdx] = entry;
-    } else {
-      data.dailyLog.push(entry);
-    }
-    save();
-    renderDailyLog();
-    toast(`Day ${dateKey} archived ✅`, "fa-box-archive");
-  }
-
-  document.getElementById('archiveTodayBtn').addEventListener('click', archiveToday);
-
   // ---------- OVERVIEW WIDGETS ----------
   function renderOverviewWidgets(){
     const ml = Number(data.water.ml) || 0;
@@ -3220,7 +2323,7 @@
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result);
-        data = normalizeData(Object.assign({}, defaultData, parsed));
+        setData(normalizeData(Object.assign({}, defaultData, parsed)));
         save();
         renderAll();
         toast("Data imported", "fa-upload");
@@ -3234,7 +2337,7 @@
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     if(confirm("Reset ALL dashboard data? This cannot be undone.")){
-      data = structuredClone(defaultData);
+      setData(structuredClone(defaultData));
       data.water.lastDate = todayStr();
       data.steps.lastDate = todayStr();
       data.supplements.lastDate = todayStr();
@@ -3248,11 +2351,9 @@
   function renderAll(){
     renderSalla();
     renderDigitalAssets();
-    renderPlatforms();
     renderHero();
     renderExpenses();
     renderRevenueChart();
-    renderFollowersChart();
     renderWater();
     renderSteps();
     renderWorkoutStatusCards();
@@ -3264,12 +2365,10 @@
     renderPythonChecklist();
     renderKanban();
     renderStudyPlan();
-    renderElectives();
     renderGpaSection();
-    renderCalendar();
+    renderHabitCalendar();
     renderOverviewTodos();
     renderOverviewWidgets();
-    renderDailyLog();
     switchTab(data.activeTab);
   }
 
