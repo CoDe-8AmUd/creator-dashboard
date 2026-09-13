@@ -522,6 +522,63 @@
         </form>
         <ul id="pythonList" class="space-y-2"></ul>
       </section>
+
+      <!-- ============ TASKS & PRODUCTIVITY MODULE ============ -->
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-list-check text-sky-300 mr-2"></i>To-Do <span class="opacity-60 text-xs">/ مهام فورية</span></h2>
+          <span class="text-sm text-slate-400"><span id="todoDone">0</span>/<span id="todoTotal">0</span> done</span>
+        </div>
+        <form id="todoForm" class="flex flex-wrap gap-2 mb-4">
+          <input id="todoInput" type="text" placeholder="Add a task..." class="flex-1 min-w-[160px] bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="todoRecurrence" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none">
+            <option value="once">One-time</option>
+            <option value="daily">Daily</option>
+          </select>
+          <input id="todoDueDate" type="date" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
+          <button type="submit" class="bg-sky-600 hover:bg-sky-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <ul id="todoList" class="space-y-2"></ul>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-flag-checkered text-amber-300 mr-2"></i>Milestones <span class="opacity-60 text-xs">/ مشاريع بمهلة</span></h2>
+          <span class="text-sm text-slate-400"><span id="milestoneDone">0</span>/<span id="milestoneTotal">0</span> done</span>
+        </div>
+        <form id="milestoneForm" class="flex flex-wrap gap-2 mb-4">
+          <input id="milestoneInput" type="text" placeholder="Add a milestone / project..." class="flex-1 min-w-[160px] bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="milestoneDueDate" type="datetime-local" required class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
+          <button type="submit" class="bg-amber-600 hover:bg-amber-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <ul id="milestoneList" class="space-y-2"></ul>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-fire text-orange-300 mr-2"></i>Habit Tracker <span class="opacity-60 text-xs">/ متتبع العادات — اليوم</span></h2>
+          <span id="habitTrackerDate" class="text-xs text-slate-500"></span>
+        </div>
+        <form id="habitForm" class="flex gap-2 mb-4">
+          <input id="habitInput" type="text" placeholder="Add a habit template..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-orange-600 hover:bg-orange-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <div id="habitList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-hourglass-half text-rose-300 mr-2"></i>Pomodoro Timer <span class="opacity-60 text-xs">/ مؤقت بومودورو (25 دقيقة)</span></h2>
+          <span class="text-sm text-slate-400"><span id="pomodoroSessions">0</span> sessions today</span>
+        </div>
+        <div class="flex flex-col items-center gap-4 py-2">
+          <div id="pomodoroDisplay" class="text-5xl font-bold text-white tabular-nums">25:00</div>
+          <div class="flex gap-3">
+            <button id="pomodoroStartBtn" class="bg-rose-600 hover:bg-rose-500 transition text-white px-5 py-2 rounded-lg font-medium"><i class="fa-solid fa-play mr-1.5"></i>Start</button>
+            <button id="pomodoroResetBtn" class="bg-panel2 border border-border hover:border-rose-400 transition text-slate-300 px-5 py-2 rounded-lg font-medium"><i class="fa-solid fa-rotate-left mr-1.5"></i>Reset</button>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- ============ KFU CIS (0922) ACADEMIC TAB ============ -->
@@ -1864,6 +1921,297 @@
     done: document.getElementById('pythonDone')
   }, "bg-emerald-500 border-emerald-500 text-white");
 
+  // ---------- TASKS & PRODUCTIVITY MODULE ----------
+  function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function renderTodos(){
+    const arr = data.tasksModule.todos;
+    const list = document.getElementById('todoList');
+    const today = todayStr();
+    list.innerHTML = "";
+    if(arr.length === 0){
+      list.append(emptyStateEl('fa-list-check', "No tasks yet — add one above.", 'li'));
+    }
+    arr.forEach((t) => {
+      const isDone = t.recurrence === 'daily' ? t.doneDate === today : !!t.done;
+      const li = document.createElement('li');
+      li.className = "fade-in flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+      const check = document.createElement('button');
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (isDone ? "bg-sky-500 border-sky-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      check.addEventListener('click', () => {
+        if(t.recurrence === 'daily'){
+          t.doneDate = isDone ? "" : today;
+        } else {
+          t.done = !t.done;
+        }
+        save();
+        renderTodos();
+        renderOverviewTodos();
+      });
+
+      const body = document.createElement('div');
+      body.className = "flex-1";
+      const text = document.createElement('div');
+      text.className = "text-sm " + (isDone ? "todo-done" : "text-slate-200");
+      text.textContent = t.text;
+      body.append(text);
+      const meta = document.createElement('div');
+      meta.className = "text-[11px] text-slate-500 flex gap-2 mt-0.5";
+      meta.innerHTML = (t.recurrence === 'daily' ? '<span><i class="fa-solid fa-rotate mr-1"></i>Daily</span>' : '<span><i class="fa-regular fa-circle mr-1"></i>One-time</span>') +
+        (t.dueDate ? `<span><i class="fa-regular fa-calendar mr-1"></i>${t.dueDate}</span>` : "");
+      body.append(meta);
+
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = arr.indexOf(t);
+        if(idx > -1) arr.splice(idx, 1);
+        save();
+        renderTodos();
+        renderOverviewTodos();
+      });
+
+      li.append(check, body, del);
+      list.append(li);
+    });
+
+    document.getElementById('todoTotal').textContent = arr.length;
+    document.getElementById('todoDone').textContent = arr.filter(t => t.recurrence === 'daily' ? t.doneDate === today : t.done).length;
+  }
+
+  document.getElementById('todoForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('todoInput');
+    const val = input.value.trim();
+    if(!val) return;
+    data.tasksModule.todos.push({
+      id: genId(),
+      text: val,
+      recurrence: document.getElementById('todoRecurrence').value,
+      dueDate: document.getElementById('todoDueDate').value || "",
+      done: false,
+      doneDate: ""
+    });
+    input.value = "";
+    document.getElementById('todoDueDate').value = "";
+    save();
+    renderTodos();
+    renderOverviewTodos();
+  });
+
+  function formatCountdown(ms){
+    if(ms <= 0) return "Due now";
+    const totalSec = Math.floor(ms / 1000);
+    const months = Math.floor(totalSec / (30*24*3600));
+    let rem = totalSec - months*30*24*3600;
+    const weeks = Math.floor(rem / (7*24*3600));
+    rem -= weeks*7*24*3600;
+    const days = Math.floor(rem / (24*3600));
+    rem -= days*24*3600;
+    const hours = Math.floor(rem / 3600);
+    rem -= hours*3600;
+    const mins = Math.floor(rem / 60);
+    const secs = rem - mins*60;
+    const parts = [];
+    if(months) parts.push(`${months}mo`);
+    if(weeks) parts.push(`${weeks}w`);
+    if(days || parts.length) parts.push(`${days}d`);
+    parts.push(`${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`);
+    return parts.join(' ');
+  }
+
+  function renderMilestones(){
+    const arr = data.tasksModule.milestones;
+    const list = document.getElementById('milestoneList');
+    list.innerHTML = "";
+    if(arr.length === 0){
+      list.append(emptyStateEl('fa-flag-checkered', "No milestones yet — add one above.", 'li'));
+    }
+    arr.forEach((m) => {
+      const li = document.createElement('li');
+      li.className = "fade-in flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+      const check = document.createElement('button');
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (m.done ? "bg-amber-500 border-amber-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      check.addEventListener('click', () => {
+        m.done = !m.done;
+        save();
+        renderMilestones();
+        renderOverviewTodos();
+      });
+
+      const body = document.createElement('div');
+      body.className = "flex-1";
+      const text = document.createElement('div');
+      text.className = "text-sm " + (m.done ? "todo-done" : "text-slate-200");
+      text.textContent = m.text;
+      const countdown = document.createElement('div');
+      countdown.className = "text-[11px] mt-0.5 " + (m.done ? "text-slate-500" : "text-amber-300");
+      const due = new Date(m.dueDate).getTime();
+      countdown.dataset.due = due;
+      countdown.textContent = m.done ? "Completed" : formatCountdown(due - Date.now());
+      body.append(text, countdown);
+
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = arr.indexOf(m);
+        if(idx > -1) arr.splice(idx, 1);
+        save();
+        renderMilestones();
+        renderOverviewTodos();
+      });
+
+      li.append(check, body, del);
+      list.append(li);
+    });
+
+    document.getElementById('milestoneTotal').textContent = arr.length;
+    document.getElementById('milestoneDone').textContent = arr.filter(m => m.done).length;
+  }
+
+  document.getElementById('milestoneForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('milestoneInput');
+    const dueInput = document.getElementById('milestoneDueDate');
+    const val = input.value.trim();
+    if(!val || !dueInput.value) return;
+    data.tasksModule.milestones.push({ id: genId(), text: val, dueDate: dueInput.value, done: false });
+    input.value = "";
+    dueInput.value = "";
+    save();
+    renderMilestones();
+    renderOverviewTodos();
+  });
+
+  // Live countdown tick — re-reads Date.now() each second, never accumulates drift.
+  setInterval(() => {
+    document.querySelectorAll('#milestoneList [data-due]').forEach(el => {
+      const due = Number(el.dataset.due);
+      if(!el.closest('li').querySelector('.todo-done')){
+        el.textContent = formatCountdown(due - Date.now());
+      }
+    });
+  }, 1000);
+
+  function renderHabitTracker(){
+    const today = todayStr();
+    document.getElementById('habitTrackerDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+    if(!data.tasksModule.habitChecks[today]) data.tasksModule.habitChecks[today] = {};
+    const todayChecks = data.tasksModule.habitChecks[today];
+
+    const wrap = document.getElementById('habitList');
+    wrap.innerHTML = "";
+    data.tasksModule.habitTemplates.forEach(name => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+      const check = document.createElement('button');
+      check.type = "button";
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (todayChecks[name] ? "bg-orange-500 border-orange-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      check.addEventListener('click', () => {
+        todayChecks[name] = !todayChecks[name];
+        save();
+        renderHabitTracker();
+      });
+      const span = document.createElement('span');
+      span.className = "flex-1 text-sm text-slate-200";
+      span.textContent = name;
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        data.tasksModule.habitTemplates = data.tasksModule.habitTemplates.filter(h => h !== name);
+        save();
+        renderHabitTracker();
+      });
+      row.append(check, span, del);
+      wrap.append(row);
+    });
+  }
+
+  document.getElementById('habitForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('habitInput');
+    const val = input.value.trim();
+    if(!val || data.tasksModule.habitTemplates.includes(val)) return;
+    data.tasksModule.habitTemplates.push(val);
+    input.value = "";
+    save();
+    renderHabitTracker();
+  });
+
+  // ---------- POMODORO (Date.now()-based — survives idle tabs/browsers) ----------
+  const POMODORO_MS = 25 * 60 * 1000;
+
+  function renderPomodoro(){
+    const p = data.tasksModule.pomodoro;
+    const today = todayStr();
+    if(p.lastDate !== today){ p.sessionsToday = 0; p.lastDate = today; }
+    document.getElementById('pomodoroSessions').textContent = p.sessionsToday;
+
+    const display = document.getElementById('pomodoroDisplay');
+    const startBtn = document.getElementById('pomodoroStartBtn');
+    if(p.running && p.endAt){
+      const remaining = p.endAt - Date.now();
+      if(remaining <= 0){
+        p.running = false;
+        p.endAt = null;
+        p.sessionsToday++;
+        save();
+        toast("Pomodoro session complete!", "fa-check");
+        renderPomodoro();
+        return;
+      }
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      startBtn.innerHTML = '<i class="fa-solid fa-pause mr-1.5"></i>Pause';
+    } else {
+      const remaining = (typeof p.remainingMs === 'number' && p.remainingMs > 0) ? p.remainingMs : POMODORO_MS;
+      const mins = Math.floor(Math.max(remaining,0) / 60000);
+      const secs = Math.floor((Math.max(remaining,0) % 60000) / 1000);
+      display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      startBtn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i>Start';
+    }
+  }
+
+  document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
+    const p = data.tasksModule.pomodoro;
+    if(p.running){
+      // Pause: bank the remaining time so resuming doesn't reset the countdown.
+      p.remainingMs = Math.max(p.endAt - Date.now(), 0);
+      p.endAt = null;
+      p.running = false;
+    } else {
+      const remaining = (typeof p.remainingMs === 'number' && p.remainingMs > 0) ? p.remainingMs : POMODORO_MS;
+      p.endAt = Date.now() + remaining;
+      p.remainingMs = null;
+      p.running = true;
+    }
+    save();
+    renderPomodoro();
+  });
+
+  document.getElementById('pomodoroResetBtn').addEventListener('click', () => {
+    const p = data.tasksModule.pomodoro;
+    p.running = false;
+    p.endAt = null;
+    p.remainingMs = null;
+    save();
+    renderPomodoro();
+  });
+
+  setInterval(renderPomodoro, 1000);
+
   function renderOverviewTodos(){
     const combined = [];
     data.projects.academic.forEach(t => combined.push({ task: t, cat: 'Academic' }));
@@ -2478,6 +2826,10 @@
     renderAcademicChecklist();
     renderSrsUmlChecklist();
     renderPythonChecklist();
+    renderTodos();
+    renderMilestones();
+    renderHabitTracker();
+    renderPomodoro();
     renderKanban();
     renderStudyPlan();
     renderGpaSection();

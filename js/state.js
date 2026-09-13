@@ -139,7 +139,20 @@ export const defaultData = {
     pinHash: null     // simple obfuscated PIN (not cryptographically secure)
   },
   // Visual habit tracker (Daily Log): { 'YYYY-MM-DD': { supplements: {Zinc:bool,...}, training: {Push:bool,...} } }
-  habitLog: {}
+  habitLog: {},
+
+  // Tasks & Productivity module
+  tasksModule: {
+    todos: [],        // { id, text, recurrence: 'once'|'daily', dueDate: 'YYYY-MM-DD'|'', done, doneDate: 'YYYY-MM-DD'|'' }
+    milestones: [],   // { id, text, dueDate: 'YYYY-MM-DDTHH:mm', done }
+    habitTemplates: ["Gym Push-Pull-Legs", "Supplements", "Coding"],
+    habitChecks: {},  // { 'YYYY-MM-DD': { habitName: true } } — mirrors habitLog's date-keyed reset pattern
+    pomodoro: { running: false, endAt: null, sessionsToday: 0, lastDate: "" }
+  },
+
+  settings: {
+    languages: []     // preferred programming languages, e.g. ['JavaScript','Python']
+  }
 };
 
 export function todayStr(){
@@ -214,6 +227,17 @@ export function normalizeData(parsed){
     }
 
     if(parsed.habitLog && typeof parsed.habitLog === 'object') merged.habitLog = parsed.habitLog;
+
+    if(parsed.tasksModule){
+      const tm = parsed.tasksModule;
+      if(Array.isArray(tm.todos)) merged.tasksModule.todos = tm.todos;
+      if(Array.isArray(tm.milestones)) merged.tasksModule.milestones = tm.milestones;
+      if(Array.isArray(tm.habitTemplates) && tm.habitTemplates.length) merged.tasksModule.habitTemplates = tm.habitTemplates;
+      if(tm.habitChecks && typeof tm.habitChecks === 'object') merged.tasksModule.habitChecks = tm.habitChecks;
+      if(tm.pomodoro) merged.tasksModule.pomodoro = Object.assign({}, merged.tasksModule.pomodoro, tm.pomodoro);
+    }
+
+    if(parsed.settings && Array.isArray(parsed.settings.languages)) merged.settings.languages = parsed.settings.languages;
 
     return merged;
   } catch(e){
