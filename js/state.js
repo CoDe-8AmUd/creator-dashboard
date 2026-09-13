@@ -152,6 +152,13 @@ export const defaultData = {
 
   settings: {
     languages: []     // preferred programming languages, e.g. ['JavaScript','Python']
+  },
+
+  // Financial & Investment module
+  financeModule: {
+    monthlyGoal: 0,
+    entries: [],    // { id, type: 'revenue'|'expense', amount, note, date: 'YYYY-MM-DD' } — quick-entry log, independent of the Salla/expense tracker above
+    portfolio: []   // { id, platform, assetType, amount }
   }
 };
 
@@ -238,6 +245,13 @@ export function normalizeData(parsed){
     }
 
     if(parsed.settings && Array.isArray(parsed.settings.languages)) merged.settings.languages = parsed.settings.languages;
+
+    if(parsed.financeModule){
+      const fm = parsed.financeModule;
+      merged.financeModule.monthlyGoal = Number(fm.monthlyGoal) || 0;
+      if(Array.isArray(fm.entries)) merged.financeModule.entries = fm.entries;
+      if(Array.isArray(fm.portfolio)) merged.financeModule.portfolio = fm.portfolio;
+    }
 
     return merged;
   } catch(e){

@@ -383,6 +383,59 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="digitalGrid"></div>
       </section>
 
+      <!-- ============ FINANCIAL & INVESTMENT MODULE ============ -->
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-wallet text-emerald-300 mr-2"></i>Micro Financial Dashboard <span class="opacity-60 text-xs">/ لوحة مالية سريعة</span></h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
+            <p class="text-slate-500 text-xs">Monthly Goal</p>
+            <p class="font-bold text-white sensitive-value" id="fmGoalDisplay">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-emerald-500/30">
+            <p class="text-emerald-300 text-xs">Total Revenue</p>
+            <p class="font-bold text-emerald-300 sensitive-value" id="fmRevenueDisplay">0.00 ر.س</p>
+          </div>
+          <div class="bg-panel2 rounded-xl px-4 py-3 border border-red-500/30">
+            <p class="text-red-300 text-xs">Total Expenses</p>
+            <p class="font-bold text-red-300 sensitive-value" id="fmExpenseDisplay">0.00 ر.س</p>
+          </div>
+        </div>
+        <div class="w-full bg-panel2 rounded-full h-2.5 border border-border overflow-hidden mb-4">
+          <div id="fmGoalBar" class="h-full bg-gradient-to-r from-emerald-500 to-accent2 transition-all duration-300" style="width:0%"></div>
+        </div>
+        <form id="fmGoalForm" class="flex gap-2 mb-4">
+          <input id="fmGoalInput" type="number" min="0" step="0.01" placeholder="Set monthly goal..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg text-sm font-semibold">Set Goal</button>
+        </form>
+        <form id="fmEntryForm" class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
+          <input id="fmEntryAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="fmEntryNote" type="text" placeholder="Note (optional)" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="fmEntryType" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <option value="revenue">Revenue</option>
+            <option value="expense">Expense</option>
+          </select>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Entry</button>
+        </form>
+        <div id="fmEntryList" class="space-y-2"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-simple text-purple-300 mr-2"></i>Investment Portfolio Tracker <span class="opacity-60 text-xs">/ متتبع المحفظة الاستثمارية</span></h2>
+          <span class="text-sm text-slate-400">Total Portfolio: <span id="portfolioTotal" class="font-semibold text-purple-300 sensitive-value">0.00 ر.س</span></span>
+        </div>
+        <form id="portfolioForm" class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
+          <input id="portfolioPlatform" type="text" placeholder="Platform (e.g. Binance)" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="portfolioAssetType" type="text" placeholder="Asset type (e.g. Crypto)" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <input id="portfolioAmount" type="number" min="0" step="0.01" placeholder="Amount" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Holding</button>
+        </form>
+        <div id="portfolioList" class="space-y-2 mb-4"></div>
+        <div id="portfolioAllocation" class="space-y-2"></div>
+      </section>
+
     </div>
 
     <!-- ============ FITNESS & HEALTH TAB ============ -->
@@ -2224,6 +2277,161 @@
 
   setInterval(renderPomodoro, 1000);
 
+  // ---------- FINANCIAL & INVESTMENT MODULE ----------
+  function ensureFinanceModule(){
+    if(!data.financeModule) data.financeModule = structuredClone(defaultData.financeModule);
+  }
+
+  function renderFinanceDashboard(){
+    ensureFinanceModule();
+    const fm = data.financeModule;
+    const revenue = fm.entries.filter(e => e.type === 'revenue').reduce((s,e) => s + (Number(e.amount)||0), 0);
+    const expense = fm.entries.filter(e => e.type === 'expense').reduce((s,e) => s + (Number(e.amount)||0), 0);
+
+    document.getElementById('fmGoalDisplay').textContent = fmtMoney(fm.monthlyGoal);
+    document.getElementById('fmRevenueDisplay').textContent = fmtMoney(revenue);
+    document.getElementById('fmExpenseDisplay').textContent = fmtMoney(expense);
+    const pct = fm.monthlyGoal > 0 ? Math.min(100, Math.round((revenue / fm.monthlyGoal) * 100)) : 0;
+    document.getElementById('fmGoalBar').style.width = pct + "%";
+
+    const list = document.getElementById('fmEntryList');
+    list.innerHTML = "";
+    if(fm.entries.length === 0){
+      list.append(emptyStateEl('fa-wallet', "No entries yet — add revenue or expenses above.", 'div'));
+    }
+    fm.entries.slice().reverse().forEach(entry => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+      const icon = document.createElement('span');
+      icon.className = entry.type === 'revenue' ? "text-emerald-400" : "text-red-400";
+      icon.innerHTML = entry.type === 'revenue' ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>';
+      const body = document.createElement('div');
+      body.className = "flex-1";
+      const amountEl = document.createElement('div');
+      amountEl.className = "text-sm font-semibold sensitive-value " + (entry.type === 'revenue' ? "text-emerald-300" : "text-red-300");
+      amountEl.textContent = fmtMoney(entry.amount);
+      const noteEl = document.createElement('div');
+      noteEl.className = "text-[11px] text-slate-500";
+      noteEl.textContent = entry.note || (entry.type === 'revenue' ? 'Revenue' : 'Expense');
+      body.append(amountEl, noteEl);
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = fm.entries.indexOf(entry);
+        if(idx > -1) fm.entries.splice(idx, 1);
+        save();
+        renderFinanceDashboard();
+      });
+      row.append(icon, body, del);
+      list.append(row);
+    });
+  }
+
+  document.getElementById('fmGoalForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ensureFinanceModule();
+    const input = document.getElementById('fmGoalInput');
+    const val = Number(input.value);
+    if(!val || val <= 0) return;
+    data.financeModule.monthlyGoal = val;
+    input.value = "";
+    save();
+    renderFinanceDashboard();
+    toast("Monthly goal updated", "fa-bullseye");
+  });
+
+  document.getElementById('fmEntryForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ensureFinanceModule();
+    const amountInput = document.getElementById('fmEntryAmount');
+    const noteInput = document.getElementById('fmEntryNote');
+    const amount = Number(amountInput.value);
+    if(!amount || amount <= 0) return;
+    data.financeModule.entries.push({
+      id: genId(),
+      type: document.getElementById('fmEntryType').value,
+      amount,
+      note: noteInput.value.trim(),
+      date: todayStr()
+    });
+    amountInput.value = "";
+    noteInput.value = "";
+    save();
+    renderFinanceDashboard();
+  });
+
+  function renderPortfolio(){
+    ensureFinanceModule();
+    const arr = data.financeModule.portfolio;
+    const list = document.getElementById('portfolioList');
+    list.innerHTML = "";
+    if(arr.length === 0){
+      list.append(emptyStateEl('fa-chart-simple', "No holdings yet — add one above.", 'div'));
+    }
+    const total = arr.reduce((s,h) => s + (Number(h.amount)||0), 0);
+    arr.forEach(h => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+      const body = document.createElement('div');
+      body.className = "flex-1";
+      const line1 = document.createElement('div');
+      line1.className = "text-sm text-slate-200 font-medium";
+      line1.textContent = `${h.platform} — ${h.assetType}`;
+      const line2 = document.createElement('div');
+      line2.className = "text-[11px] text-purple-300 sensitive-value";
+      line2.textContent = fmtMoney(h.amount);
+      body.append(line1, line2);
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = arr.indexOf(h);
+        if(idx > -1) arr.splice(idx, 1);
+        save();
+        renderPortfolio();
+      });
+      row.append(body, del);
+      list.append(row);
+    });
+
+    document.getElementById('portfolioTotal').textContent = fmtMoney(total);
+
+    const byType = {};
+    arr.forEach(h => { byType[h.assetType] = (byType[h.assetType] || 0) + (Number(h.amount)||0); });
+    const allocWrap = document.getElementById('portfolioAllocation');
+    allocWrap.innerHTML = "";
+    const colors = ['bg-purple-500','bg-accent2','bg-emerald-500','bg-amber-500','bg-rose-500','bg-blue-500'];
+    Object.entries(byType).forEach(([type, amount], idx) => {
+      const pct = total > 0 ? Math.round((amount / total) * 100) : 0;
+      const row = document.createElement('div');
+      row.innerHTML = `
+        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>${type}</span><span>${pct}%</span></div>
+        <div class="w-full bg-panel2 rounded-full h-2 border border-border overflow-hidden">
+          <div class="h-full ${colors[idx % colors.length]}" style="width:${pct}%"></div>
+        </div>`;
+      allocWrap.append(row);
+    });
+  }
+
+  document.getElementById('portfolioForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ensureFinanceModule();
+    const platformInput = document.getElementById('portfolioPlatform');
+    const assetInput = document.getElementById('portfolioAssetType');
+    const amountInput = document.getElementById('portfolioAmount');
+    const platform = platformInput.value.trim();
+    const assetType = assetInput.value.trim();
+    const amount = Number(amountInput.value);
+    if(!platform || !assetType || !amount || amount <= 0) return;
+    data.financeModule.portfolio.push({ id: genId(), platform, assetType, amount });
+    platformInput.value = "";
+    assetInput.value = "";
+    amountInput.value = "";
+    save();
+    renderPortfolio();
+  });
+
   function renderOverviewTodos(){
     const combined = [];
     data.projects.academic.forEach(t => combined.push({ task: t, cat: 'Academic' }));
@@ -2848,6 +3056,8 @@
     safeRender(renderMilestones);
     safeRender(renderHabitTracker);
     safeRender(renderPomodoro);
+    safeRender(renderFinanceDashboard);
+    safeRender(renderPortfolio);
     safeRender(renderKanban);
     safeRender(renderStudyPlan);
     safeRender(renderGpaSection);
