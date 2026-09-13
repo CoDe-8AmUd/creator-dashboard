@@ -91,6 +91,35 @@
     user-select: none;
   }
   .sensitive-value { transition: filter .25s ease; }
+
+  /* ---------- Card polish ---------- */
+  .card { transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .3s ease, color .3s ease; }
+  .card:hover { border-color: rgba(99,102,241,0.35); }
+  body, header, nav, .card, .bg-panel2, .bg-base { transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
+
+  /* ---------- Light mode override (toggle saved locally) ---------- */
+  html.light body { background-color: #f4f5f9; color: #1e2433; }
+  html.light { color-scheme: light; }
+  html.light .card { background: rgba(255,255,255,0.85); border-color: rgba(20,25,40,0.08); box-shadow: 0 4px 20px -8px rgba(30,35,60,0.12); }
+  html.light .bg-panel2 { background-color: #eceef5 !important; color: #1e2433; }
+  html.light .bg-base { background-color: #f4f5f9 !important; }
+  html.light .border-border { border-color: rgba(20,25,40,0.12) !important; }
+  html.light .text-white { color: #10131c !important; }
+  html.light .text-slate-200, html.light .text-slate-300 { color: #333c4f !important; }
+  html.light .text-slate-400, html.light .text-slate-500 { color: #616b82 !important; }
+  html.light .text-slate-600 { color: #7a8296 !important; }
+  html.light body::before { opacity: 0.5; }
+  html.light select, html.light input { color-scheme: light; }
+  html.light [contenteditable="true"]:hover { border-color: #6366f1; }
+
+  /* ---------- Kanban board ---------- */
+  .kanban-col { min-height: 120px; }
+  .kanban-card { cursor: grab; }
+  .kanban-card:active { cursor: grabbing; }
+  .kanban-col.drag-over { outline: 2px dashed #22d3ee; outline-offset: 4px; border-radius: 12px; }
+
+  /* ---------- Setup / modal overlay ---------- */
+  .modal-overlay { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
 </style>
 </head>
 <body class="bg-base text-slate-200 min-h-screen font-sans antialiased">
@@ -111,6 +140,52 @@
     <button id="authToggleModeBtn" type="button" class="text-xs text-slate-400 hover:text-accent2 transition">Don't have an account? Create one</button>
     <p id="authError" class="text-red-400 text-sm mt-3 hidden"></p>
     <p id="authStatus" class="text-slate-500 text-xs mt-4"></p>
+  </div>
+</div>
+
+<!-- FIREBASE SETUP MODAL (shown when config is missing/invalid) -->
+<div id="setupModal" class="modal-overlay hidden">
+  <div class="card glow rounded-2xl p-6 w-[92%] max-w-lg">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-11 h-11 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
+      </div>
+      <div>
+        <h2 class="font-bold text-white">Firebase Setup Required</h2>
+        <p class="text-xs text-slate-400">Cloud sync can't connect yet — the dashboard will keep working offline.</p>
+      </div>
+    </div>
+    <p id="setupModalMessage" class="text-sm text-slate-300 mb-3">Your Firebase configuration keys look missing or invalid.</p>
+    <ol class="text-sm text-slate-400 list-decimal list-inside space-y-1.5 mb-4">
+      <li>Go to your <span class="text-white font-medium">Firebase Console → Project Settings → General</span></li>
+      <li>Under "Your apps", copy the <span class="text-white font-medium">firebaseConfig</span> object</li>
+      <li>Open <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">index.html</code>, find the block bordered with <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">// ===</code> near the top of the <code class="bg-panel2 px-1.5 py-0.5 rounded text-accent2">&lt;script type="module"&gt;</code> tag, and paste your keys in</li>
+      <li>Enable <span class="text-white font-medium">Authentication → Email/Password</span> and <span class="text-white font-medium">Firestore Database</span> in the console</li>
+      <li>Reload this page</li>
+    </ol>
+    <div class="flex gap-2">
+      <button id="setupModalDismiss" class="flex-1 bg-panel2 border border-border hover:border-accent text-slate-200 rounded-lg py-2.5 text-sm font-semibold">
+        Continue in local-only mode
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GPA / GRADES PIN-PROTECTED MODAL -->
+<div id="gpaPinModal" class="modal-overlay hidden">
+  <div class="card glow rounded-2xl p-6 w-[90%] max-w-sm text-center">
+    <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-500/20 flex items-center justify-center mb-3">
+      <i class="fa-solid fa-lock text-xl text-purple-300"></i>
+    </div>
+    <h2 class="font-bold text-white mb-1" id="gpaPinTitle">Enter PIN</h2>
+    <p class="text-xs text-slate-400 mb-4" id="gpaPinSubtitle">Grades & GPA are protected — enter your 4-digit PIN</p>
+    <input id="gpaPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-center text-2xl tracking-[0.5em] text-white placeholder-slate-600 focus:border-accent outline-none mb-3" />
+    <p id="gpaPinError" class="text-red-400 text-xs mb-3 hidden">Incorrect PIN</p>
+    <div class="flex gap-2">
+      <button id="gpaPinCancel" class="flex-1 bg-panel2 border border-border hover:border-red-400 hover:text-red-400 text-slate-300 rounded-lg py-2.5 text-sm">Cancel</button>
+      <button id="gpaPinSubmit" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white rounded-lg py-2.5 text-sm font-semibold">Unlock</button>
+    </div>
+    <button id="gpaPinChange" class="text-xs text-slate-500 hover:text-accent2 mt-4">Change PIN</button>
   </div>
 </div>
 
@@ -138,6 +213,9 @@
           <button id="privacyToggle" title="Toggle amounts visibility" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
             <i class="fa-solid fa-eye-slash" id="privacyIcon"></i>
           </button>
+          <button id="themeToggle" title="Toggle dark/light mode" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+          </button>
           <button id="exportBtn" title="Export data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
             <i class="fa-solid fa-download"></i>
           </button>
@@ -162,6 +240,7 @@
         <button class="tab-btn-nav" data-tab="revenue"><i class="fa-solid fa-sack-dollar mr-1.5"></i>Revenue & Business <span class="opacity-60">/ الأرباح والمشاريع</span></button>
         <button class="tab-btn-nav" data-tab="fitness"><i class="fa-solid fa-dumbbell mr-1.5"></i>Fitness & Health <span class="opacity-60">/ النادي والصحة</span></button>
         <button class="tab-btn-nav" data-tab="projects"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Projects & Tasks <span class="opacity-60">/ المشاريع والمهام</span></button>
+        <button class="tab-btn-nav" data-tab="academic"><i class="fa-solid fa-university mr-1.5"></i>KFU CIS (0922) <span class="opacity-60">/ الأكاديمي</span></button>
         <button class="tab-btn-nav" data-tab="dailyLog"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Daily Log <span class="opacity-60">/ السجل اليومي</span></button>
       </div>
     </nav>
@@ -266,6 +345,10 @@
           <div class="bg-panel2 rounded-xl px-4 py-3 border border-border">
             <p class="text-slate-500 text-xs">Donut SMP</p>
             <p class="font-bold text-white sensitive-value" id="heroDonut">0.00 ر.س</p>
+          </div>
+          <div class="bg-emerald-500/10 rounded-xl px-4 py-3 border border-emerald-500/30">
+            <p class="text-emerald-300 text-xs">Salla Net (after fees)</p>
+            <p class="font-bold text-emerald-300 sensitive-value" id="heroSallaNet">0.00 ر.س</p>
           </div>
         </div>
       </section>
@@ -475,6 +558,96 @@
       </section>
     </div>
 
+    <!-- ============ KFU CIS (0922) ACADEMIC TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="academic">
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-table-columns text-indigo-300 mr-2"></i>Coursework Kanban Board</h2>
+        </div>
+        <form id="kanbanForm" class="flex gap-2 mb-4">
+          <input id="kanbanInput" type="text" placeholder="Add a task (assignment, IS project, SRS doc...)..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-panel2/50 border border-border rounded-xl p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <h3 class="text-sm font-semibold text-slate-300">Pending</h3>
+              <span class="text-xs text-slate-500 ml-auto" id="kanbanPendingCount">0</span>
+            </div>
+            <div class="kanban-col space-y-2" id="kanbanCol-pending" data-status="pending"></div>
+          </div>
+          <div class="bg-panel2/50 border border-border rounded-xl p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h3 class="text-sm font-semibold text-slate-300">In Progress</h3>
+              <span class="text-xs text-slate-500 ml-auto" id="kanbanInProgressCount">0</span>
+            </div>
+            <div class="kanban-col space-y-2" id="kanbanCol-inProgress" data-status="inProgress"></div>
+          </div>
+          <div class="bg-panel2/50 border border-border rounded-xl p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <h3 class="text-sm font-semibold text-slate-300">Completed</h3>
+              <span class="text-xs text-slate-500 ml-auto" id="kanbanCompletedCount">0</span>
+            </div>
+            <div class="kanban-col space-y-2" id="kanbanCol-completed" data-status="completed"></div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">Drag a card between columns, or use its arrow buttons on touch devices.</p>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-book-open text-emerald-300 mr-2"></i>Completed Core Courses <span class="opacity-60 text-xs">(CIS 0922 study plan — public)</span></h2>
+          <span class="text-sm text-slate-400"><span id="coreCoursesDone">0</span>/<span id="coreCoursesTotal">0</span> · <span id="coreCreditsDone">0</span> credit hrs</span>
+        </div>
+        <div id="coreCoursesList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-layer-group text-cyan-300 mr-2"></i>Electives <span class="opacity-60 text-xs">/ المواد العامة والاختيارية</span></h2>
+          <span class="text-sm text-slate-400"><span id="electiveCreditsTotal">0</span> credit hrs</span>
+        </div>
+        <form id="electiveForm" class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
+          <input id="electiveName" type="text" placeholder="Course name" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <select id="electiveType" class="sm:col-span-2 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
+            <option value="University">University Elective / مادة عامة</option>
+            <option value="Program">Program Elective</option>
+          </select>
+          <input id="electiveCredits" type="number" min="0" step="1" placeholder="Credit hrs" class="sm:col-span-1 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="sm:col-span-5 bg-cyan-600 hover:bg-cyan-500 transition text-white py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i>Add Elective</button>
+        </form>
+        <div id="electiveList" class="space-y-2"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-simple text-purple-300 mr-2"></i>Grades & GPA <span class="opacity-60 text-xs">(5.0 scale — PIN protected)</span></h2>
+          <button id="gpaLockToggleBtn" class="text-xs bg-panel2 border border-border hover:border-purple-400 rounded-lg px-3 py-1.5 text-slate-300">
+            <i class="fa-solid fa-lock mr-1"></i><span id="gpaLockToggleLabel">Unlock Grades</span>
+          </button>
+        </div>
+        <div id="gpaLockedNotice" class="flex flex-col items-center justify-center gap-2 text-center py-8 text-slate-600">
+          <i class="fa-solid fa-shield-halved text-3xl"></i>
+          <p class="text-sm text-slate-500">Grades and cumulative GPA are hidden. Click "Unlock Grades" and enter your PIN to view/edit.</p>
+        </div>
+        <div id="gpaUnlockedContent" class="hidden">
+          <div class="flex flex-wrap items-center gap-4 mb-4 p-4 bg-panel2 border border-border rounded-xl">
+            <div>
+              <p class="text-xs text-slate-500">Cumulative GPA</p>
+              <p class="text-3xl font-extrabold text-white sensitive-value" id="gpaValue">0.00</p>
+            </div>
+            <div class="text-xs text-slate-500">out of 5.0 scale · based on graded courses below</div>
+          </div>
+          <div id="gpaCourseGrades" class="space-y-2"></div>
+        </div>
+      </section>
+
+    </div>
+
     <!-- ============ DAILY LOG TAB ============ -->
     <div class="tab-panel hidden space-y-8" data-tab="dailyLog">
       <section class="card rounded-2xl p-5">
@@ -536,12 +709,48 @@
   };
   // =====================================================================
 
-  const firebaseApp = initializeApp(firebaseConfig);
-  const auth = getAuth(firebaseApp);
-  const db = getFirestore(firebaseApp);
+  // ---------- Graceful Firebase setup / error handling ----------
+  function looksUnconfigured(cfg){
+    if(!cfg || !cfg.apiKey || !cfg.projectId) return true;
+    return /PASTE_YOUR/i.test(cfg.apiKey) || /PASTE_YOUR/i.test(cfg.projectId);
+  }
 
-  setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
-  enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
+  let firebaseApp = null, auth = null, db = null, firebaseReady = false;
+  const setupModal = document.getElementById('setupModal');
+  const setupModalMessage = document.getElementById('setupModalMessage');
+
+  function showSetupModal(message){
+    if(message) setupModalMessage.textContent = message;
+    setupModal.classList.remove('hidden');
+  }
+  document.getElementById('setupModalDismiss').addEventListener('click', () => {
+    setupModal.classList.add('hidden');
+    // Local-only mode: skip auth gate entirely and show the app straight from localStorage.
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    data = loadLocalData();
+    applyDailyResets();
+    renderAll();
+    toast("Working in local-only mode (no cloud sync)", "fa-hard-drive");
+  });
+
+  try {
+    if(looksUnconfigured(firebaseConfig)){
+      throw Object.assign(new Error("Firebase config keys are still placeholders."), { code: 'config/placeholder' });
+    }
+    firebaseApp = initializeApp(firebaseConfig);
+    auth = getAuth(firebaseApp);
+    db = getFirestore(firebaseApp);
+    setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
+    enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
+    firebaseReady = true;
+  } catch(err){
+    console.warn("Firebase initialization issue:", err);
+    const msg = err && err.code === 'config/placeholder'
+      ? "Your Firebase configuration keys are still placeholders — paste your project's real keys to enable cloud sync."
+      : `Firebase failed to initialize (${err && err.code ? err.code : 'unknown error'}). The dashboard will run in local-only mode.`;
+    showSetupModal(msg);
+  }
 
   // =====================================================================
   // 📦 APP STATE & LOCAL STORAGE FALLBACK
@@ -549,14 +758,29 @@
   const STORAGE_KEY = "creatorDashboardData_v2";
   const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
   const PRIVACY_KEY = "creatorDashboardPrivacyMode";
-  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'dailyLog'];
+  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'dailyLog'];
   const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
+  const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 'C': 3, 'D+': 2.5, 'D': 2, 'F': 0 };
+  const CORE_COURSES_SEED = [
+    { id: 'cis-101', name: 'Introduction to Computing', credits: 3 },
+    { id: 'cis-102', name: 'Fundamentals of Programming', credits: 3 },
+    { id: 'cis-201', name: 'Object-Oriented Programming (Java)', credits: 3 },
+    { id: 'cis-210', name: 'Database Concepts', credits: 3 },
+    { id: 'cis-220', name: 'Data Structures & Algorithms', credits: 3 },
+    { id: 'cis-230', name: 'Computer Organization & Architecture', credits: 3 },
+    { id: 'cis-240', name: 'Operating Systems', credits: 3 },
+    { id: 'cis-310', name: 'Systems Analysis & Design (SRS/UML)', credits: 3 },
+    { id: 'cis-320', name: 'Web Application Development', credits: 3 },
+    { id: 'cis-330', name: 'Computer Networks', credits: 3 },
+    { id: 'cis-340', name: 'Software Engineering', credits: 3 },
+    { id: 'cis-410', name: 'Information Systems Project Management', credits: 3 },
+  ];
 
   const defaultData = {
     activeTab: 'overview',
     expenses: 0,
     expensesLog: [],
-    salla: { sales: 0, orders: 0, aov: 0, refunds: 0, usernamesStock: 0 },
+    salla: { sales: 0, fees: 0, orders: 0, aov: 0, refunds: 0, usernamesStock: 0 },
     donutSmp: { revenue: 0, spawners: 0, shulkers: 0 },
     platforms: {
       tiktok:    { followers: 0, views: 0, revenue: 0, posts: 0 },
@@ -586,6 +810,13 @@
       academic: [],
       srsUml: [],
       python: []
+    },
+    academicModule: {
+      kanban: { pending: [], inProgress: [], completed: [] },
+      coreCourses: {}, // { courseId: true } — completed core courses (public, no grades)
+      electives: [],   // { id, name, type, credits }
+      grades: {},      // { courseKey: 'A' } — PIN protected
+      pinHash: null     // simple obfuscated PIN (not cryptographically secure)
     },
     dailyLog: []
   };
@@ -654,6 +885,19 @@
 
       merged.dailyLog = Array.isArray(parsed.dailyLog) ? parsed.dailyLog : [];
 
+      if(parsed.academicModule){
+        const am = parsed.academicModule;
+        if(am.kanban){
+          ['pending','inProgress','completed'].forEach(k => {
+            if(Array.isArray(am.kanban[k])) merged.academicModule.kanban[k] = am.kanban[k];
+          });
+        }
+        if(am.coreCourses && typeof am.coreCourses === 'object') merged.academicModule.coreCourses = am.coreCourses;
+        if(Array.isArray(am.electives)) merged.academicModule.electives = am.electives;
+        if(am.grades && typeof am.grades === 'object') merged.academicModule.grades = am.grades;
+        if(am.pinHash) merged.academicModule.pinHash = am.pinHash;
+      }
+
       return merged;
     } catch(e){
       console.warn("Failed to normalize data, using defaults", e);
@@ -706,6 +950,7 @@
   }
 
   function attachCloudSync(uid){
+    if(!firebaseReady) return;
     if(unsubscribeSnapshot) unsubscribeSnapshot();
     const ref = doc(db, 'users', uid);
     unsubscribeSnapshot = onSnapshot(ref, (snap) => {
@@ -735,7 +980,7 @@
   }
 
   function pushToCloud(){
-    if(!currentUser) return;
+    if(!firebaseReady || !currentUser) return;
     setSyncStatus('syncing');
     clearTimeout(cloudSaveTimer);
     cloudSaveTimer = setTimeout(() => {
@@ -785,6 +1030,21 @@
   });
   applyPrivacyMode();
 
+  // ---------- Dark / Light theme toggle ----------
+  const THEME_KEY = "creatorDashboardTheme";
+  function getTheme(){ return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; }
+  function applyTheme(){
+    const theme = getTheme();
+    document.documentElement.classList.toggle('light', theme === 'light');
+    const icon = document.getElementById('themeIcon');
+    if(icon) icon.className = theme === 'light' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  }
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    localStorage.setItem(THEME_KEY, getTheme() === 'light' ? 'dark' : 'light');
+    applyTheme();
+  });
+  applyTheme();
+
   // =====================================================================
   // 🔐 FIREBASE AUTHENTICATION (Email & Password)
   // =====================================================================
@@ -819,7 +1079,23 @@
 
   authToggleModeBtn.addEventListener('click', () => setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
 
+  function friendlyAuthError(err){
+    const code = err && err.code;
+    if(code === 'auth/api-key-not-valid' || code === 'auth/invalid-api-key'){
+      return "Your Firebase API key is invalid. Paste your real project keys into the firebaseConfig block near the top of the script.";
+    }
+    if(code === 'auth/network-request-failed') return "Network error — check your internet connection and try again.";
+    if(code === 'auth/email-already-in-use') return "That email already has an account — try signing in instead.";
+    if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return "Incorrect email or password.";
+    if(code === 'auth/weak-password') return "Password should be at least 6 characters.";
+    return (err && err.message) ? err.message.replace('Firebase: ', '') : "Authentication failed";
+  }
+
   async function handleAuthSubmit(){
+    if(!firebaseReady){
+      showSetupModal("Firebase isn't configured yet, so sign-in is unavailable. Paste your keys or continue in local-only mode.");
+      return;
+    }
     const email = authEmail.value.trim();
     const password = authPassword.value;
     if(!email || !password){
@@ -837,7 +1113,12 @@
       }
       authError.classList.add('hidden');
     } catch(err){
-      authError.textContent = (err && err.message) ? err.message.replace('Firebase: ', '') : "Authentication failed";
+      console.warn("Auth error:", err);
+      if(err && (err.code === 'auth/api-key-not-valid' || err.code === 'auth/invalid-api-key')){
+        firebaseReady = false;
+        showSetupModal(friendlyAuthError(err));
+      }
+      authError.textContent = friendlyAuthError(err);
       authError.classList.remove('hidden');
     } finally {
       authSubmitBtn.disabled = false;
@@ -850,28 +1131,46 @@
   authEmail.addEventListener('keydown', e => { if(e.key === 'Enter') authPassword.focus(); });
 
   document.getElementById('lockBtn').addEventListener('click', () => {
+    if(!firebaseReady){
+      // local-only mode: just go back to the auth/setup screen
+      app.classList.add('hidden');
+      authScreen.classList.remove('hidden');
+      return;
+    }
     signOut(auth).catch(err => console.warn("Sign out failed:", err));
   });
 
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    if(user){
-      authScreen.classList.add('hidden');
-      app.classList.remove('hidden');
-      data = loadLocalData(); // instant local render (works offline), cloud snapshot reconciles right after
-      applyDailyResets();
-      renderAll();
-      attachCloudSync(user.uid);
-    } else {
-      if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-      lastPushedJson = null;
-      app.classList.add('hidden');
-      authScreen.classList.remove('hidden');
-      authEmail.value = "";
-      authPassword.value = "";
-      setAuthMode('signin');
+  if(firebaseReady){
+    try {
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if(user){
+          authScreen.classList.add('hidden');
+          app.classList.remove('hidden');
+          data = loadLocalData(); // instant local render (works offline), cloud snapshot reconciles right after
+          applyDailyResets();
+          renderAll();
+          attachCloudSync(user.uid);
+        } else {
+          if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+          lastPushedJson = null;
+          app.classList.add('hidden');
+          authScreen.classList.remove('hidden');
+          authEmail.value = "";
+          authPassword.value = "";
+          setAuthMode('signin');
+        }
+      }, (err) => {
+        console.warn("Auth state listener error:", err);
+        firebaseReady = false;
+        showSetupModal(friendlyAuthError(err));
+      });
+    } catch(err){
+      console.warn("Failed to attach auth listener:", err);
+      firebaseReady = false;
+      showSetupModal(friendlyAuthError(err));
     }
-  });
+  }
 
   // ---------- HEADER DATE ----------
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -917,6 +1216,11 @@
       renderAcademicChecklist();
       renderSrsUmlChecklist();
       renderPythonChecklist();
+    } else if(tab === 'academic'){
+      renderKanban();
+      renderCoreCourses();
+      renderElectives();
+      renderGpaSection();
     } else if(tab === 'dailyLog'){
       renderDailyLog();
     }
@@ -963,6 +1267,8 @@
 
   function computeRevenueTotals(){
     const salla = Number(data.salla.sales)||0;
+    const sallaFees = Number(data.salla.fees)||0;
+    const sallaNet = salla - sallaFees;
     const tiktok = Number(data.platforms.tiktok.revenue)||0;
     const youtube = Number(data.platforms.youtube.revenue)||0;
     const instagram = Number(data.platforms.instagram.revenue)||0;
@@ -971,15 +1277,16 @@
     const total = salla + tiktok + youtube + instagram + snapchat + donut;
     const manualExpenses = Number(data.expenses)||0;
     const loggedExpenses = computeExpenseLogTotal();
-    const expenses = manualExpenses + loggedExpenses;
-    const net = total - expenses;
-    return { salla, tiktok, youtube, instagram, snapchat, donut, total, manualExpenses, loggedExpenses, expenses, net };
+    const expenses = manualExpenses + loggedExpenses + sallaFees;
+    const net = total - manualExpenses - loggedExpenses - sallaFees;
+    return { salla, sallaFees, sallaNet, tiktok, youtube, instagram, snapchat, donut, total, manualExpenses, loggedExpenses, expenses, net };
   }
 
   // ---------- SALLA CARDS ----------
   const sallaGrid = document.getElementById('sallaGrid');
   const sallaFields = [
     { key: 'sales', label: 'Sales', icon: 'fa-sack-dollar', money: true },
+    { key: 'fees', label: 'Platform Fees', icon: 'fa-hand-holding-dollar', money: true },
     { key: 'orders', label: 'Orders', icon: 'fa-bag-shopping', money: false },
     { key: 'aov', label: 'Avg Order Value', icon: 'fa-chart-simple', money: true },
     { key: 'refunds', label: 'Refunds', icon: 'fa-rotate-left', money: true },
@@ -1251,6 +1558,7 @@
     document.getElementById('heroInstagram').textContent = fmtMoney(t.instagram);
     document.getElementById('heroSnapchat').textContent = fmtMoney(t.snapchat);
     document.getElementById('heroDonut').textContent = fmtMoney(t.donut);
+    document.getElementById('heroSallaNet').textContent = fmtMoney(t.sallaNet);
 
     if(document.activeElement !== totalExpensesEl){
       totalExpensesEl.textContent = t.manualExpenses.toFixed(2);
@@ -1934,6 +2242,346 @@
     });
   }
 
+  // ---------- KFU CIS (0922) ACADEMIC MODULE ----------
+
+  // -- Kanban board --
+  function kanbanArr(status){ return data.academicModule.kanban[status]; }
+
+  function renderKanbanCard(task, status){
+    const card = document.createElement('div');
+    card.className = "kanban-card bg-panel2 border border-border rounded-lg p-3 fade-in";
+    card.draggable = true;
+    card.dataset.taskId = task.id;
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', task.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    const text = document.createElement('p');
+    text.className = "text-sm text-slate-200 mb-2 break-words";
+    text.textContent = task.text;
+
+    const controls = document.createElement('div');
+    controls.className = "flex items-center gap-1.5";
+
+    const order = ['pending', 'inProgress', 'completed'];
+    const curIdx = order.indexOf(status);
+
+    if(curIdx > 0){
+      const prevBtn = document.createElement('button');
+      prevBtn.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-400 hover:text-white hover:border-accent";
+      prevBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+      prevBtn.addEventListener('click', () => moveKanbanTask(task.id, status, order[curIdx - 1]));
+      controls.append(prevBtn);
+    }
+    if(curIdx < order.length - 1){
+      const nextBtn = document.createElement('button');
+      nextBtn.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-400 hover:text-white hover:border-accent";
+      nextBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
+      nextBtn.addEventListener('click', () => moveKanbanTask(task.id, status, order[curIdx + 1]));
+      controls.append(nextBtn);
+    }
+    const del = document.createElement('button');
+    del.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-500 hover:text-red-400 hover:border-red-400 ml-auto";
+    del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    del.addEventListener('click', () => {
+      const arr = kanbanArr(status);
+      const idx = arr.findIndex(t => t.id === task.id);
+      if(idx >= 0) arr.splice(idx, 1);
+      save();
+      renderKanban();
+    });
+    controls.append(del);
+
+    card.append(text, controls);
+    return card;
+  }
+
+  function moveKanbanTask(taskId, fromStatus, toStatus){
+    if(fromStatus === toStatus) return;
+    const fromArr = kanbanArr(fromStatus);
+    const idx = fromArr.findIndex(t => t.id === taskId);
+    if(idx < 0) return;
+    const [task] = fromArr.splice(idx, 1);
+    kanbanArr(toStatus).push(task);
+    save();
+    renderKanban();
+  }
+
+  function renderKanban(){
+    ['pending', 'inProgress', 'completed'].forEach(status => {
+      const col = document.getElementById(`kanbanCol-${status}`);
+      col.innerHTML = "";
+      const arr = kanbanArr(status);
+      if(arr.length === 0){
+        col.append(emptyStateEl('fa-inbox', "No tasks", 'div'));
+      } else {
+        arr.forEach(task => col.append(renderKanbanCard(task, status)));
+      }
+      const countKey = status === 'inProgress' ? 'kanbanInProgressCount' : (status === 'pending' ? 'kanbanPendingCount' : 'kanbanCompletedCount');
+      document.getElementById(countKey).textContent = arr.length;
+    });
+  }
+
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    col.addEventListener('dragover', (e) => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const taskId = e.dataTransfer.getData('text/plain');
+      const toStatus = col.dataset.status;
+      let fromStatus = null;
+      for(const s of ['pending', 'inProgress', 'completed']){
+        if(kanbanArr(s).some(t => t.id === taskId)){ fromStatus = s; break; }
+      }
+      if(fromStatus) moveKanbanTask(taskId, fromStatus, toStatus);
+    });
+  });
+
+  document.getElementById('kanbanForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('kanbanInput');
+    const text = input.value.trim();
+    if(!text) return;
+    kanbanArr('pending').push({ id: Date.now() + Math.random().toString(36).slice(2), text });
+    input.value = "";
+    save();
+    renderKanban();
+  });
+
+  // -- Completed core courses (public) --
+  function renderCoreCourses(){
+    const wrap = document.getElementById('coreCoursesList');
+    wrap.innerHTML = "";
+    let doneCount = 0, doneCredits = 0;
+    CORE_COURSES_SEED.forEach(course => {
+      const checked = !!data.academicModule.coreCourses[course.id];
+      if(checked){ doneCount++; doneCredits += course.credits; }
+
+      const row = document.createElement('button');
+      row.type = "button";
+      row.className = "flex items-center gap-3 text-left bg-panel2 border rounded-lg px-3 py-2.5 transition " +
+        (checked ? "border-emerald-400 bg-emerald-500/10" : "border-border hover:border-emerald-400/50");
+      const check = document.createElement('span');
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      const label = document.createElement('span');
+      label.className = "flex-1 text-sm " + (checked ? "text-slate-200" : "text-slate-300");
+      label.textContent = course.name;
+      const credits = document.createElement('span');
+      credits.className = "text-xs text-slate-500 flex-shrink-0";
+      credits.textContent = `${course.credits} cr`;
+      row.append(check, label, credits);
+      row.addEventListener('click', () => {
+        data.academicModule.coreCourses[course.id] = !data.academicModule.coreCourses[course.id];
+        save();
+        renderCoreCourses();
+      });
+      wrap.append(row);
+    });
+    document.getElementById('coreCoursesTotal').textContent = CORE_COURSES_SEED.length;
+    document.getElementById('coreCoursesDone').textContent = doneCount;
+    document.getElementById('coreCreditsDone').textContent = doneCredits;
+  }
+
+  // -- Electives (dynamic add) --
+  document.getElementById('electiveForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById('electiveName');
+    const typeInput = document.getElementById('electiveType');
+    const creditsInput = document.getElementById('electiveCredits');
+    const name = nameInput.value.trim();
+    const credits = parseInt(creditsInput.value, 10) || 0;
+    if(!name){
+      toast("Enter an elective course name", "fa-triangle-exclamation");
+      return;
+    }
+    data.academicModule.electives.push({ id: Date.now() + Math.random().toString(36).slice(2), name, type: typeInput.value, credits });
+    nameInput.value = "";
+    creditsInput.value = "";
+    save();
+    renderElectives();
+  });
+
+  function renderElectives(){
+    const wrap = document.getElementById('electiveList');
+    wrap.innerHTML = "";
+    const list = data.academicModule.electives;
+    if(list.length === 0){
+      wrap.append(emptyStateEl('fa-layer-group', "No electives added yet."));
+    } else {
+      list.forEach((el, idx) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between gap-3 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
+        const left = document.createElement('div');
+        left.className = "min-w-0";
+        const nameP = document.createElement('p');
+        nameP.className = "text-slate-200 truncate";
+        nameP.textContent = el.name;
+        const metaP = document.createElement('p');
+        metaP.className = "text-xs text-slate-500";
+        metaP.textContent = `${el.type === 'Program' ? 'Program Elective' : 'University Elective / مادة عامة'} · ${el.credits} cr`;
+        left.append(nameP, metaP);
+        const del = document.createElement('button');
+        del.className = "text-slate-500 hover:text-red-400 flex-shrink-0";
+        del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        del.addEventListener('click', () => {
+          data.academicModule.electives.splice(idx, 1);
+          save();
+          renderElectives();
+        });
+        row.append(left, del);
+        wrap.append(row);
+      });
+    }
+    const totalCredits = list.reduce((a,e) => a + (Number(e.credits)||0), 0);
+    document.getElementById('electiveCreditsTotal').textContent = totalCredits;
+  }
+
+  // -- GPA / Grades (PIN protected) --
+  const DEFAULT_GPA_PIN = "1234";
+  const GPA_UNLOCK_SESSION_KEY = "creatorDashboardGpaUnlocked";
+  let gpaPinIntent = null; // 'unlock' | 'change'
+
+  function hashPin(pin){
+    // Lightweight obfuscation (not cryptographic) — good enough to keep grades out of casual view.
+    let h = 0;
+    for(let i = 0; i < pin.length; i++){ h = (h * 31 + pin.charCodeAt(i)) >>> 0; }
+    return String(h);
+  }
+  function getStoredPinHash(){ return data.academicModule.pinHash || hashPin(DEFAULT_GPA_PIN); }
+  function isGpaUnlockedThisSession(){ return sessionStorage.getItem(GPA_UNLOCK_SESSION_KEY) === '1'; }
+
+  const gpaPinModal = document.getElementById('gpaPinModal');
+  const gpaPinInput = document.getElementById('gpaPinInput');
+  const gpaPinError = document.getElementById('gpaPinError');
+  const gpaPinTitle = document.getElementById('gpaPinTitle');
+  const gpaPinSubtitle = document.getElementById('gpaPinSubtitle');
+
+  function openGpaPinModal(intent){
+    gpaPinIntent = intent;
+    gpaPinInput.value = "";
+    gpaPinError.classList.add('hidden');
+    if(intent === 'change'){
+      gpaPinTitle.textContent = "Change PIN";
+      gpaPinSubtitle.textContent = "Enter your CURRENT PIN to continue";
+    } else {
+      gpaPinTitle.textContent = "Enter PIN";
+      gpaPinSubtitle.textContent = "Grades & GPA are protected — enter your 4-digit PIN";
+    }
+    gpaPinModal.classList.remove('hidden');
+    setTimeout(() => gpaPinInput.focus(), 50);
+  }
+
+  document.getElementById('gpaLockToggleBtn').addEventListener('click', () => {
+    if(isGpaUnlockedThisSession()){
+      sessionStorage.removeItem(GPA_UNLOCK_SESSION_KEY);
+      renderGpaSection();
+    } else {
+      openGpaPinModal('unlock');
+    }
+  });
+  document.getElementById('gpaPinChange').addEventListener('click', () => openGpaPinModal('change'));
+  document.getElementById('gpaPinCancel').addEventListener('click', () => gpaPinModal.classList.add('hidden'));
+
+  document.getElementById('gpaPinSubmit').addEventListener('click', () => {
+    const pin = gpaPinInput.value.trim();
+    if(pin.length !== 4 || !/^\d{4}$/.test(pin)){
+      gpaPinError.textContent = "PIN must be 4 digits";
+      gpaPinError.classList.remove('hidden');
+      return;
+    }
+    if(hashPin(pin) !== getStoredPinHash()){
+      gpaPinError.textContent = "Incorrect PIN";
+      gpaPinError.classList.remove('hidden');
+      return;
+    }
+    if(gpaPinIntent === 'change'){
+      gpaPinModal.classList.add('hidden');
+      const newPin = prompt("Enter a NEW 4-digit PIN:");
+      if(newPin && /^\d{4}$/.test(newPin.trim())){
+        data.academicModule.pinHash = hashPin(newPin.trim());
+        save();
+        toast("PIN updated", "fa-lock");
+      } else if(newPin !== null){
+        toast("PIN must be exactly 4 digits — not changed", "fa-triangle-exclamation");
+      }
+    } else {
+      sessionStorage.setItem(GPA_UNLOCK_SESSION_KEY, '1');
+      gpaPinModal.classList.add('hidden');
+      renderGpaSection();
+    }
+  });
+  gpaPinInput.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('gpaPinSubmit').click(); });
+
+  function gpaGradableCourses(){
+    const core = CORE_COURSES_SEED.filter(c => data.academicModule.coreCourses[c.id]).map(c => ({ key: c.id, name: c.name, credits: c.credits }));
+    const electives = data.academicModule.electives.map(e => ({ key: 'elective-' + e.id, name: e.name, credits: Number(e.credits)||0 }));
+    return core.concat(electives);
+  }
+
+  function computeGpa(){
+    const courses = gpaGradableCourses();
+    let totalPoints = 0, totalCredits = 0;
+    courses.forEach(c => {
+      const grade = data.academicModule.grades[c.key];
+      if(grade && GRADE_POINTS.hasOwnProperty(grade) && c.credits > 0){
+        totalPoints += GRADE_POINTS[grade] * c.credits;
+        totalCredits += c.credits;
+      }
+    });
+    return totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+  }
+
+  function renderGpaSection(){
+    const unlocked = isGpaUnlockedThisSession();
+    document.getElementById('gpaLockedNotice').classList.toggle('hidden', unlocked);
+    document.getElementById('gpaUnlockedContent').classList.toggle('hidden', !unlocked);
+    document.getElementById('gpaLockToggleLabel').textContent = unlocked ? "Lock Grades" : "Unlock Grades";
+    document.getElementById('gpaLockToggleBtn').querySelector('i').className = unlocked ? "fa-solid fa-lock-open mr-1" : "fa-solid fa-lock mr-1";
+    if(!unlocked) return;
+
+    document.getElementById('gpaValue').textContent = computeGpa().toFixed(2);
+
+    const wrap = document.getElementById('gpaCourseGrades');
+    wrap.innerHTML = "";
+    const courses = gpaGradableCourses();
+    if(courses.length === 0){
+      wrap.append(emptyStateEl('fa-graduation-cap', "Mark some core courses or add electives first to grade them."));
+      return;
+    }
+    courses.forEach(c => {
+      const row = document.createElement('div');
+      row.className = "flex items-center justify-between gap-3 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
+      const label = document.createElement('span');
+      label.className = "flex-1 text-slate-300 truncate sensitive-value";
+      label.textContent = `${c.name} (${c.credits} cr)`;
+      const select = document.createElement('select');
+      select.className = "bg-base border border-border rounded-lg px-2 py-1.5 text-sm text-white sensitive-value";
+      const noneOpt = document.createElement('option');
+      noneOpt.value = "";
+      noneOpt.textContent = "—";
+      select.append(noneOpt);
+      Object.keys(GRADE_POINTS).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        if(data.academicModule.grades[c.key] === g) opt.selected = true;
+        select.append(opt);
+      });
+      select.addEventListener('change', () => {
+        if(select.value) data.academicModule.grades[c.key] = select.value;
+        else delete data.academicModule.grades[c.key];
+        save();
+        renderGpaSection();
+      });
+      row.append(label, select);
+      wrap.append(row);
+    });
+  }
+
   // ---------- DAILY LOG (HISTORICAL ARCHIVE) ----------
   function renderDailyLog(){
     const tbody = document.getElementById('dailyLogBody');
@@ -2108,6 +2756,10 @@
     renderAcademicChecklist();
     renderSrsUmlChecklist();
     renderPythonChecklist();
+    renderKanban();
+    renderCoreCourses();
+    renderElectives();
+    renderGpaSection();
     renderOverviewTodos();
     renderOverviewWidgets();
     renderDailyLog();
