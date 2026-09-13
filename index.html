@@ -574,6 +574,17 @@
       </section>
 
       <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-graduation-cap text-amber-300 mr-2"></i>Graduation Project Tracker <span class="opacity-60 text-xs">/ متتبع شروط مشروع التخرج — public</span></h2>
+          <span id="gradTrackerBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-panel2 border border-border text-slate-400">0/4</span>
+        </div>
+        <div class="w-full bg-panel2 rounded-full h-2.5 border border-border overflow-hidden mb-4">
+          <div id="gradTrackerBar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-300" style="width:0%"></div>
+        </div>
+        <div id="gradTrackerList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-semibold text-white"><i class="fa-solid fa-chart-simple text-purple-300 mr-2"></i>Grades & GPA <span class="opacity-60 text-xs">(5.0 scale — PIN protected)</span></h2>
           <button id="gpaLockToggleBtn" class="text-xs bg-panel2 border border-border hover:border-purple-400 rounded-lg px-3 py-1.5 text-slate-300">
@@ -587,10 +598,14 @@
         <div id="gpaUnlockedContent" class="hidden">
           <div class="flex flex-wrap items-center gap-4 mb-4 p-4 bg-panel2 border border-border rounded-xl">
             <div>
-              <p class="text-xs text-slate-500">Cumulative GPA</p>
+              <p class="text-xs text-slate-500">Cumulative GPA <span class="opacity-60">/ التراكمي</span></p>
               <p class="text-3xl font-extrabold text-white sensitive-value" id="gpaValue">0.00</p>
             </div>
             <div class="text-xs text-slate-500">out of 5.0 scale · based on graded courses below</div>
+          </div>
+          <div class="mb-4">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Semester GPA <span class="opacity-60">/ المعدل الفصلي</span></p>
+            <div id="gpaSemesterList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
           <div id="gpaCourseGrades" class="space-y-2"></div>
         </div>
@@ -655,7 +670,7 @@
   } from "./js/firebase.js";
   import { createHabitCalendar } from "./js/calendar.js";
   import {
-    SPLIT_ORDER, GRADE_POINTS, STUDY_PLAN, allPlanCourses, defaultData,
+    SPLIT_ORDER, GRADE_POINTS, STUDY_PLAN, allPlanCourses, GRADUATION_REQUIREMENTS, defaultData,
     todayStr, normalizeData, loadLocalData, data, setData, applyDailyResets,
     save, attachCloudSync, onRemoteUpdate, setCurrentUser, clearCurrentUser
   } from "./js/state.js";
@@ -2135,6 +2150,8 @@
     document.getElementById('coreCoursesTotal').textContent = allCourses.length;
     document.getElementById('coreCoursesDone').textContent = doneCount;
     document.getElementById('coreCreditsDone').textContent = doneCredits;
+
+    renderGraduationTracker();
   }
 
   // -- GPA / Grades (PIN protected) --
@@ -2232,6 +2249,84 @@
     return totalCredits > 0 ? (totalPoints / totalCredits) : 0;
   }
 
+  // -- Semester GPA breakdown (grouped by the course's planned Year/Semester) --
+  function computeSemesterGpas(){
+    const groups = {};
+    allPlanCourses().forEach(c => {
+      if(!isCourseCompleted(c.code) || c.gradable === false) return;
+      const grade = data.academicModule.grades[c.code];
+      if(!grade || !GRADE_POINTS.hasOwnProperty(grade) || c.credits <= 0) return;
+      const key = `Year ${c.year} — ${c.semLabel}`;
+      if(!groups[key]) groups[key] = { key, year: c.year, points: 0, credits: 0 };
+      groups[key].points += GRADE_POINTS[grade] * c.credits;
+      groups[key].credits += c.credits;
+    });
+    return Object.values(groups)
+      .map(g => ({ ...g, gpa: g.credits > 0 ? g.points / g.credits : 0 }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }
+
+  // -- Graduation Project Tracker (public — completion status only, no grades) --
+  function renderGraduationTracker(){
+    const totalCredits = totalCompletedCredits();
+    const items = [
+      {
+        label: `Minimum ${GRADUATION_REQUIREMENTS.minCredits} completed credit hours`,
+        labelAr: `الحد الأدنى ${GRADUATION_REQUIREMENTS.minCredits} ساعة معتمدة`,
+        met: totalCredits >= GRADUATION_REQUIREMENTS.minCredits,
+        note: `${totalCredits}/${GRADUATION_REQUIREMENTS.minCredits} cr`
+      },
+      ...GRADUATION_REQUIREMENTS.required.map(code => {
+        const c = courseByCode(code);
+        return { label: `Pass [${code}] ${c ? c.en : ''}`, labelAr: c ? c.ar : '', met: isCourseCompleted(code) };
+      }),
+      {
+        label: `Pass [${GRADUATION_REQUIREMENTS.requiredAnyOf.join('] or [')}]`,
+        labelAr: GRADUATION_REQUIREMENTS.requiredAnyOf.map(code => (courseByCode(code)||{}).ar).join(' أو '),
+        met: GRADUATION_REQUIREMENTS.requiredAnyOf.some(code => isCourseCompleted(code))
+      }
+    ];
+
+    const metCount = items.filter(i => i.met).length;
+    document.getElementById('gradTrackerBadge').textContent = `${metCount}/${items.length}`;
+    document.getElementById('gradTrackerBadge').className = "text-xs font-semibold px-2.5 py-1 rounded-full border " +
+      (metCount === items.length ? "bg-emerald-500/15 border-emerald-400 text-emerald-300" : "bg-panel2 border-border text-slate-400");
+    document.getElementById('gradTrackerBar').style.width = Math.round((metCount / items.length) * 100) + "%";
+
+    const wrap = document.getElementById('gradTrackerList');
+    wrap.innerHTML = "";
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = "flex items-start gap-3 border rounded-lg px-3 py-2.5 " +
+        (item.met ? "border-emerald-400 bg-emerald-500/10" : "border-border bg-panel2");
+      const icon = document.createElement('span');
+      icon.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 " +
+        (item.met ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-slate-500");
+      icon.innerHTML = item.met ? '<i class="fa-solid fa-check text-xs"></i>' : '<i class="fa-solid fa-hourglass-half text-[10px]"></i>';
+      const textWrap = document.createElement('div');
+      textWrap.className = "flex-1 min-w-0";
+      const en = document.createElement('p');
+      en.className = "text-sm " + (item.met ? "text-slate-200" : "text-slate-300");
+      en.textContent = item.label;
+      textWrap.append(en);
+      if(item.labelAr){
+        const ar = document.createElement('p');
+        ar.className = "text-xs text-slate-500";
+        ar.dir = "rtl";
+        ar.textContent = item.labelAr;
+        textWrap.append(ar);
+      }
+      if(item.note){
+        const note = document.createElement('p');
+        note.className = "text-[11px] text-amber-300 mt-0.5";
+        note.textContent = item.note;
+        textWrap.append(note);
+      }
+      row.append(icon, textWrap);
+      wrap.append(row);
+    });
+  }
+
   function renderGpaSection(){
     const unlocked = isGpaUnlockedThisSession();
     document.getElementById('gpaLockedNotice').classList.toggle('hidden', unlocked);
@@ -2241,6 +2336,26 @@
     if(!unlocked) return;
 
     document.getElementById('gpaValue').textContent = computeGpa().toFixed(2);
+
+    const semWrap = document.getElementById('gpaSemesterList');
+    semWrap.innerHTML = "";
+    const semesterGpas = computeSemesterGpas();
+    if(semesterGpas.length === 0){
+      semWrap.append(emptyStateEl('fa-chart-simple', "No graded semesters yet."));
+    } else {
+      semesterGpas.forEach(g => {
+        const box = document.createElement('div');
+        box.className = "bg-panel2 border border-border rounded-lg px-3 py-2 flex items-center justify-between";
+        const label = document.createElement('span');
+        label.className = "text-sm text-slate-300 sensitive-value";
+        label.textContent = g.key;
+        const val = document.createElement('span');
+        val.className = "font-bold text-white sensitive-value";
+        val.textContent = g.gpa.toFixed(2);
+        box.append(label, val);
+        semWrap.append(box);
+      });
+    }
 
     const wrap = document.getElementById('gpaCourseGrades');
     wrap.innerHTML = "";

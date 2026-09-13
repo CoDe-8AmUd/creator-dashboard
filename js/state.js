@@ -19,9 +19,9 @@ export const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 
 export const STUDY_PLAN = [
   { year: 1, semesters: [
     { label: 'Semester 1', courses: [
-      { code: '0814132', en: 'Physics', ar: 'فيزياء', credits: 3, pre: [] },
+      { code: '0814132', en: 'Physics', ar: 'فيزياء', credits: 4, pre: [] },
       { code: '0827111', en: 'Calculus', ar: 'التفاضل والتكامل', credits: 3, pre: [] },
-      { code: '0921110', en: 'Intro to Computing', ar: 'مقدمة علم الحاسب', credits: 3, pre: [] },
+      { code: '0921110', en: 'Intro to Computing', ar: 'مقدمة علم الحاسب', credits: 4, pre: [] },
       { code: '1722111', en: 'Academic English', ar: 'اللغة الإنجليزية الأكاديمية', credits: 3, pre: [] },
       { code: '1900101', en: 'Creed and Doctrines', ar: 'العقيدة والمذاهب', credits: 2, pre: [] },
     ]},
@@ -30,38 +30,38 @@ export const STUDY_PLAN = [
       { code: '0826152', en: 'Biology', ar: 'علم الأحياء', credits: 3, pre: [] },
       { code: '0827121', en: 'Probability & Statistics', ar: 'الإحتمالات والإحصاء', credits: 3, pre: ['0827111'] },
       { code: '0827122', en: 'Discrete Mathematics', ar: 'الرياضيات المنفصلة', credits: 3, pre: ['0827111'] },
-      { code: '0921120', en: 'Fundamentals of Programming', ar: 'مبادئ البرمجة', credits: 3, pre: ['0921110'] },
+      { code: '0921120', en: 'Fundamentals of Programming', ar: 'مبادئ البرمجة', credits: 4, pre: ['0921110'] },
     ]},
   ]},
   { year: 2, semesters: [
     { label: 'Semester 1', courses: [
-      { code: '0921210', en: 'OOP 1', ar: 'البرمجة كائنية التوجه 1', credits: 3, pre: ['0921120'] },
-      { code: '0921211', en: 'Data Structure & Algorithms', ar: 'هيكلة البيانات والخوارزميات', credits: 3, pre: ['0921120', '0827122'] },
+      { code: '0921210', en: 'OOP 1', ar: 'البرمجة كائنية التوجه 1', credits: 4, pre: ['0921120'] },
+      { code: '0921211', en: 'Data Structure & Algorithms', ar: 'هيكلة البيانات والخوارزميات', credits: 4, pre: ['0921120', '0827122'] },
       { code: '0921212', en: 'Linear Algebra', ar: 'الجبر الخطي', credits: 3, pre: ['0827122'] },
-      { code: '0924214', en: 'Fund. of Computer Networks', ar: 'أساسيات شبكات الحاسب', credits: 3, pre: ['0921110'] },
+      { code: '0924214', en: 'Fund. of Computer Networks', ar: 'أساسيات شبكات الحاسب', credits: 4, pre: ['0921110'] },
       { code: '1900102', en: 'Islamic Culture', ar: 'الثقافة الإسلامية', credits: 2, pre: [] },
     ]},
     { label: 'Semester 2', courses: [
-      { code: '0922221', en: 'Requirements Engineering', ar: 'هندسة متطلبات البرمجيات', credits: 3, pre: ['0921210'] },
-      { code: '0922222', en: 'Database Concepts & Design', ar: 'مفاهيم وتصميم قواعد البيانات', credits: 3, pre: ['0921211'] },
-      { code: '0923223', en: 'Digital Logic & Design', ar: 'تصميم المنطق الرقمي', credits: 3, pre: ['0814132'] },
-      { code: '0922224', en: 'Rapid Application Development', ar: 'التطوير السريع للتطبيقات', credits: 3, pre: ['0921210'] },
+      { code: '0922221', en: 'Requirements Engineering', ar: 'هندسة متطلبات البرمجيات', credits: 4, pre: ['0921210'] },
+      { code: '0922222', en: 'Database Concepts & Design', ar: 'مفاهيم وتصميم قواعد البيانات', credits: 4, pre: ['0921211'] },
+      { code: '0923223', en: 'Digital Logic & Design', ar: 'تصميم المنطق الرقمي', credits: 4, pre: ['0814132'] },
+      { code: '0922224', en: 'Rapid Application Development', ar: 'التطوير السريع للتطبيقات', credits: 4, pre: ['0921210'] },
       { code: '1900-UE1', en: 'University Elective 1', ar: 'متطلب جامعة اختياري 1', credits: 2, pre: [] },
     ]},
   ]},
   { year: 3, semesters: [
     { label: 'Semester 1', courses: [
       { code: '0922310', en: 'Organization & Management', ar: 'تنظيم الأعمال والإدارة', credits: 3, pre: ['0603103'] },
-      { code: '0922311', en: 'System Analysis & Design', ar: 'تحليل وتصميم نظم المعلومات', credits: 3, pre: ['0922221'] },
+      { code: '0922311', en: 'System Analysis & Design', ar: 'تحليل وتصميم نظم المعلومات', credits: 4, pre: ['0922221'] },
       { code: '0922312', en: 'Technical Reports', ar: 'كتابة التقارير التقنية', credits: 2, pre: ['1722111'] },
-      { code: '0923313', en: 'Computer Org & Architecture', ar: 'معمارية وتنظيم الحاسب', credits: 3, pre: ['0923223'] },
-      { code: '0922314', en: 'Web-based Systems', ar: 'النظم المبنية على الويب', credits: 3, pre: ['0922224'] },
+      { code: '0923313', en: 'Computer Org & Architecture', ar: 'معمارية وتنظيم الحاسب', credits: 4, pre: ['0923223'] },
+      { code: '0922314', en: 'Web-based Systems', ar: 'النظم المبنية على الويب', credits: 4, pre: ['0922224'] },
     ]},
     { label: 'Semester 2', courses: [
       { code: '0921320', en: 'Computer Security', ar: 'أمن الحاسب', credits: 3, pre: ['0924214'] },
-      { code: '0921321', en: 'Operating Systems', ar: 'نظم التشغيل', credits: 3, pre: ['0923313'] },
+      { code: '0921321', en: 'Operating Systems', ar: 'نظم التشغيل', credits: 4, pre: ['0923313'] },
       { code: '0922322', en: 'Professional Responsibility', ar: 'المسؤولية المهنية', credits: 2, pre: ['0922312', '0826152'] },
-      { code: '0922323', en: 'Database Management Systems', ar: 'إدارة وتقييم قواعد البيانات', credits: 3, pre: ['0921212', '0922222'] },
+      { code: '0922323', en: 'Database Management Systems', ar: 'إدارة وتقييم قواعد البيانات', credits: 4, pre: ['0921212', '0922222'] },
       { code: '0922324', en: 'IT Project Management', ar: 'إدارة مشروع تقنية المعلومات', credits: 3, pre: ['0922311'] },
     ]},
     { label: 'Summer', courses: [
@@ -88,9 +88,20 @@ export const STUDY_PLAN = [
 
 export function allPlanCourses(){
   const out = [];
-  STUDY_PLAN.forEach(y => y.semesters.forEach(s => s.courses.forEach(c => out.push(c))));
+  STUDY_PLAN.forEach(y => y.semesters.forEach(s => s.courses.forEach(c => {
+    c.year = y.year;
+    c.semLabel = s.label;
+    out.push(c);
+  })));
   return out;
 }
+
+/** Graduation Project (0922410/0922420) eligibility gate per the CIS 0922 study plan. */
+export const GRADUATION_REQUIREMENTS = {
+  minCredits: 95,
+  required: ['0922314', '0922311'],
+  requiredAnyOf: ['0922222', '0922323']
+};
 
 export const defaultData = {
   activeTab: 'overview',
