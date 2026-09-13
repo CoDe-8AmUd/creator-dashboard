@@ -189,6 +189,18 @@
   </div>
 </div>
 
+<!-- GENERIC INLINE-EDIT MODAL (Kanban tasks, Expenses, Electives) -->
+<div id="editModal" class="modal-overlay hidden">
+  <div class="card glow rounded-2xl p-6 w-[90%] max-w-sm">
+    <h2 id="editModalTitle" class="font-bold text-white mb-4">Edit Item</h2>
+    <div id="editModalFields" class="space-y-3 mb-4"></div>
+    <div class="flex gap-2">
+      <button id="editModalCancel" class="flex-1 bg-panel2 border border-border hover:border-red-400 hover:text-red-400 text-slate-300 rounded-lg py-2.5 text-sm">Cancel</button>
+      <button id="editModalSave" class="flex-1 bg-accent hover:bg-indigo-500 text-white rounded-lg py-2.5 text-sm font-semibold">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app" class="hidden">
 
@@ -241,6 +253,7 @@
         <button class="tab-btn-nav" data-tab="fitness"><i class="fa-solid fa-dumbbell mr-1.5"></i>Fitness & Health <span class="opacity-60">/ النادي والصحة</span></button>
         <button class="tab-btn-nav" data-tab="projects"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Projects & Tasks <span class="opacity-60">/ المشاريع والمهام</span></button>
         <button class="tab-btn-nav" data-tab="academic"><i class="fa-solid fa-university mr-1.5"></i>KFU CIS (0922) <span class="opacity-60">/ الأكاديمي</span></button>
+        <button class="tab-btn-nav" data-tab="calendar"><i class="fa-solid fa-calendar-days mr-1.5"></i>Calendar <span class="opacity-60">/ التقويم</span></button>
         <button class="tab-btn-nav" data-tab="dailyLog"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Daily Log <span class="opacity-60">/ السجل اليومي</span></button>
       </div>
     </nav>
@@ -599,11 +612,12 @@
       </section>
 
       <section class="card rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-white"><i class="fa-solid fa-book-open text-emerald-300 mr-2"></i>Completed Core Courses <span class="opacity-60 text-xs">(CIS 0922 study plan — public)</span></h2>
-          <span class="text-sm text-slate-400"><span id="coreCoursesDone">0</span>/<span id="coreCoursesTotal">0</span> · <span id="coreCreditsDone">0</span> credit hrs</span>
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-book-open text-emerald-300 mr-2"></i>Study Plan <span class="opacity-60 text-xs">/ الخطة الدراسية — CIS (0922) — public</span></h2>
+          <span class="text-sm text-slate-400"><span id="coreCoursesDone">0</span>/<span id="coreCoursesTotal">0</span> courses · <span id="coreCreditsDone">0</span> credit hrs</span>
         </div>
-        <div id="coreCoursesList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        <p class="text-xs text-slate-500 mb-4"><i class="fa-solid fa-lock text-slate-500 mr-1"></i>Greyed-out / locked courses require their prerequisite(s) to be checked first.</p>
+        <div id="studyPlanWrap" class="space-y-3"></div>
       </section>
 
       <section class="card rounded-2xl p-5">
@@ -648,6 +662,36 @@
 
     </div>
 
+    <!-- ============ CALENDAR & SCHEDULING TAB ============ -->
+    <div class="tab-panel hidden space-y-8" data-tab="calendar">
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <button id="calPrevMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-left"></i></button>
+            <h2 class="font-semibold text-white text-lg" id="calMonthLabel">Month Year</h2>
+            <button id="calNextMonth" class="w-8 h-8 rounded-lg bg-panel2 border border-border hover:border-accent text-slate-300"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <button id="calTodayBtn" class="text-xs bg-panel2 border border-border hover:border-accent rounded-lg px-3 py-1.5 text-slate-300">Today</button>
+        </div>
+        <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[11px] text-slate-500 uppercase">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
+      </section>
+
+      <section class="card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-white"><i class="fa-solid fa-list-check text-accent2 mr-2"></i>Tasks for <span id="calSelectedDateLabel">selected day</span></h2>
+        </div>
+        <form id="calTaskForm" class="flex gap-2 mb-4">
+          <input id="calTaskInput" type="text" placeholder="Schedule a task on the selected date..." class="flex-1 bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
+          <button type="submit" class="bg-accent hover:bg-indigo-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <p class="text-xs text-slate-500 mb-3">Scheduled tasks are automatically added to the Kanban board (KFU CIS 0922 tab) and stay linked to this date.</p>
+        <div id="calTaskList" class="space-y-2"></div>
+      </section>
+    </div>
+
     <!-- ============ DAILY LOG TAB ============ -->
     <div class="tab-panel hidden space-y-8" data-tab="dailyLog">
       <section class="card rounded-2xl p-5">
@@ -686,6 +730,7 @@
   // 🔥 FIREBASE SETUP
   // =====================================================================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAnalytics, isSupported as analyticsIsSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
     signOut, setPersistence, browserLocalPersistence
@@ -695,17 +740,16 @@
   } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   // =====================================================================
-  // 👉 PASTE YOUR FIREBASE PROJECT CONFIG HERE 👈
-  // Firebase Console → Project Settings → General → "Your apps" → SDK setup and configuration
-  // Also enable: Authentication → Sign-in method → Email/Password, and Firestore Database.
+  // 🔥 FIREBASE PROJECT CONFIG (creator-dashboard-466ad)
   // =====================================================================
   const firebaseConfig = {
-    apiKey: "PASTE_YOUR_API_KEY_HERE",
-    authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "PASTE_YOUR_PROJECT_ID_HERE",
-    storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
-    appId: "PASTE_YOUR_APP_ID_HERE"
+    apiKey: "AIzaSyCIiTE42jmrnILw6sLo9xJt20Gjc49HUfM",
+    authDomain: "creator-dashboard-466ad.firebaseapp.com",
+    projectId: "creator-dashboard-466ad",
+    storageBucket: "creator-dashboard-466ad.firebasestorage.app",
+    messagingSenderId: "104966782824",
+    appId: "1:104966782824:web:83f6eca6b832f04dd620dd",
+    measurementId: "G-F00HK5PDM7"
   };
   // =====================================================================
 
@@ -743,6 +787,9 @@
     db = getFirestore(firebaseApp);
     setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
     enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
+    analyticsIsSupported().then(supported => {
+      if(supported){ try { getAnalytics(firebaseApp); } catch(e){ console.warn("Analytics init skipped:", e); } }
+    }).catch(() => {});
     firebaseReady = true;
   } catch(err){
     console.warn("Firebase initialization issue:", err);
@@ -758,23 +805,86 @@
   const STORAGE_KEY = "creatorDashboardData_v2";
   const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
   const PRIVACY_KEY = "creatorDashboardPrivacyMode";
-  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'dailyLog'];
+  const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'calendar', 'dailyLog'];
   const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
   const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 'C': 3, 'D+': 2.5, 'D': 2, 'F': 0 };
-  const CORE_COURSES_SEED = [
-    { id: 'cis-101', name: 'Introduction to Computing', credits: 3 },
-    { id: 'cis-102', name: 'Fundamentals of Programming', credits: 3 },
-    { id: 'cis-201', name: 'Object-Oriented Programming (Java)', credits: 3 },
-    { id: 'cis-210', name: 'Database Concepts', credits: 3 },
-    { id: 'cis-220', name: 'Data Structures & Algorithms', credits: 3 },
-    { id: 'cis-230', name: 'Computer Organization & Architecture', credits: 3 },
-    { id: 'cis-240', name: 'Operating Systems', credits: 3 },
-    { id: 'cis-310', name: 'Systems Analysis & Design (SRS/UML)', credits: 3 },
-    { id: 'cis-320', name: 'Web Application Development', credits: 3 },
-    { id: 'cis-330', name: 'Computer Networks', credits: 3 },
-    { id: 'cis-340', name: 'Software Engineering', credits: 3 },
-    { id: 'cis-410', name: 'Information Systems Project Management', credits: 3 },
+
+  // KFU CIS (0922) bilingual study plan — grouped by Year → Semester, with prerequisite codes.
+  const STUDY_PLAN = [
+    { year: 1, semesters: [
+      { label: 'Semester 1', courses: [
+        { code: '0814132', en: 'Physics', ar: 'فيزياء', credits: 3, pre: [] },
+        { code: '0827111', en: 'Calculus', ar: 'التفاضل والتكامل', credits: 3, pre: [] },
+        { code: '0921110', en: 'Intro to Computing', ar: 'مقدمة علم الحاسب', credits: 3, pre: [] },
+        { code: '1722111', en: 'Academic English', ar: 'اللغة الإنجليزية الأكاديمية', credits: 3, pre: [] },
+        { code: '1900101', en: 'Creed and Doctrines', ar: 'العقيدة والمذاهب', credits: 2, pre: [] },
+      ]},
+      { label: 'Semester 2', courses: [
+        { code: '0603103', en: 'Business & Accounting', ar: 'إدارة المحاسبة والأعمال', credits: 3, pre: ['1722111'] },
+        { code: '0826152', en: 'Biology', ar: 'علم الأحياء', credits: 3, pre: [] },
+        { code: '0827121', en: 'Probability & Statistics', ar: 'الإحتمالات والإحصاء', credits: 3, pre: ['0827111'] },
+        { code: '0827122', en: 'Discrete Mathematics', ar: 'الرياضيات المنفصلة', credits: 3, pre: ['0827111'] },
+        { code: '0921120', en: 'Fundamentals of Programming', ar: 'مبادئ البرمجة', credits: 3, pre: ['0921110'] },
+      ]},
+    ]},
+    { year: 2, semesters: [
+      { label: 'Semester 1', courses: [
+        { code: '0921210', en: 'OOP 1', ar: 'البرمجة كائنية التوجه 1', credits: 3, pre: ['0921120'] },
+        { code: '0921211', en: 'Data Structure & Algorithms', ar: 'هيكلة البيانات والخوارزميات', credits: 3, pre: ['0921120', '0827122'] },
+        { code: '0921212', en: 'Linear Algebra', ar: 'الجبر الخطي', credits: 3, pre: ['0827122'] },
+        { code: '0924214', en: 'Fund. of Computer Networks', ar: 'أساسيات شبكات الحاسب', credits: 3, pre: ['0921110'] },
+        { code: '1900102', en: 'Islamic Culture', ar: 'الثقافة الإسلامية', credits: 2, pre: [] },
+      ]},
+      { label: 'Semester 2', courses: [
+        { code: '0922221', en: 'Requirements Engineering', ar: 'هندسة متطلبات البرمجيات', credits: 3, pre: ['0921210'] },
+        { code: '0922222', en: 'Database Concepts & Design', ar: 'مفاهيم وتصميم قواعد البيانات', credits: 3, pre: ['0921211'] },
+        { code: '0923223', en: 'Digital Logic & Design', ar: 'تصميم المنطق الرقمي', credits: 3, pre: ['0814132'] },
+        { code: '0922224', en: 'Rapid Application Development', ar: 'التطوير السريع للتطبيقات', credits: 3, pre: ['0921210'] },
+        { code: '1900-UE1', en: 'University Elective 1', ar: 'متطلب جامعة اختياري 1', credits: 2, pre: [] },
+      ]},
+    ]},
+    { year: 3, semesters: [
+      { label: 'Semester 1', courses: [
+        { code: '0922310', en: 'Organization & Management', ar: 'تنظيم الأعمال والإدارة', credits: 3, pre: ['0603103'] },
+        { code: '0922311', en: 'System Analysis & Design', ar: 'تحليل وتصميم نظم المعلومات', credits: 3, pre: ['0922221'] },
+        { code: '0922312', en: 'Technical Reports', ar: 'كتابة التقارير التقنية', credits: 2, pre: ['1722111'] },
+        { code: '0923313', en: 'Computer Org & Architecture', ar: 'معمارية وتنظيم الحاسب', credits: 3, pre: ['0923223'] },
+        { code: '0922314', en: 'Web-based Systems', ar: 'النظم المبنية على الويب', credits: 3, pre: ['0922224'] },
+      ]},
+      { label: 'Semester 2', courses: [
+        { code: '0921320', en: 'Computer Security', ar: 'أمن الحاسب', credits: 3, pre: ['0924214'] },
+        { code: '0921321', en: 'Operating Systems', ar: 'نظم التشغيل', credits: 3, pre: ['0923313'] },
+        { code: '0922322', en: 'Professional Responsibility', ar: 'المسؤولية المهنية', credits: 2, pre: ['0922312', '0826152'] },
+        { code: '0922323', en: 'Database Management Systems', ar: 'إدارة وتقييم قواعد البيانات', credits: 3, pre: ['0921212', '0922222'] },
+        { code: '0922324', en: 'IT Project Management', ar: 'إدارة مشروع تقنية المعلومات', credits: 3, pre: ['0922311'] },
+      ]},
+      { label: 'Summer', courses: [
+        { code: '0922330', en: 'Practical Co-op Training', ar: 'التدريب التعاوني العملي', credits: 0, pre: [], creditPre: 95, gradable: false },
+      ]},
+    ]},
+    { year: 4, semesters: [
+      { label: 'Semester 1', courses: [
+        { code: '0922410', en: 'Project Proposal', ar: 'مقترح مشروع', credits: 1, pre: [] },
+        { code: '0922411', en: 'Info Security & Assurance', ar: 'أمن وتوكيد المعلومات', credits: 3, pre: ['0827121', '0921320'] },
+        { code: '0922412', en: 'Enterprise Systems', ar: 'النظم المؤسسية', credits: 3, pre: ['0922310'] },
+        { code: '1900-UE2', en: 'University Elective 2', ar: 'متطلب جامعة اختياري 2', credits: 2, pre: [] },
+        { code: '0924-PE1', en: 'Program Elective 1', ar: 'متطلب تخصص اختياري 1', credits: 3, pre: [] },
+      ]},
+      { label: 'Semester 2', courses: [
+        { code: '0922420', en: 'Project Implementation', ar: 'تنفيذ مشروع', credits: 2, pre: ['0922410'] },
+        { code: '0922421', en: 'Selected Topics in IS', ar: 'موضوعات مختارة في نظم المعلومات', credits: 3, pre: ['0922410'] },
+        { code: '0922422', en: 'Electronic Business', ar: 'الأعمال الإلكترونية', credits: 3, pre: ['0922310'] },
+        { code: '0924-PE2', en: 'Program Elective 2', ar: 'متطلب تخصص اختياري 2', credits: 3, pre: [] },
+        { code: '0924-PE3', en: 'Program Elective 3', ar: 'متطلب تخصص اختياري 3', credits: 3, pre: [] },
+      ]},
+    ]},
   ];
+
+  function allPlanCourses(){
+    const out = [];
+    STUDY_PLAN.forEach(y => y.semesters.forEach(s => s.courses.forEach(c => out.push(c))));
+    return out;
+  }
 
   const defaultData = {
     activeTab: 'overview',
@@ -813,10 +923,13 @@
     },
     academicModule: {
       kanban: { pending: [], inProgress: [], completed: [] },
-      coreCourses: {}, // { courseId: true } — completed core courses (public, no grades)
+      completedCourses: {}, // { courseCode: true } — completed study-plan courses (public, no grades)
       electives: [],   // { id, name, type, credits }
       grades: {},      // { courseKey: 'A' } — PIN protected
       pinHash: null     // simple obfuscated PIN (not cryptographically secure)
+    },
+    calendar: {
+      tasks: [] // { id, text, date: 'YYYY-MM-DD', done, kanbanTaskId }
     },
     dailyLog: []
   };
@@ -892,11 +1005,14 @@
             if(Array.isArray(am.kanban[k])) merged.academicModule.kanban[k] = am.kanban[k];
           });
         }
-        if(am.coreCourses && typeof am.coreCourses === 'object') merged.academicModule.coreCourses = am.coreCourses;
+        const completedSrc = am.completedCourses || am.coreCourses; // migrate legacy field name
+        if(completedSrc && typeof completedSrc === 'object') merged.academicModule.completedCourses = completedSrc;
         if(Array.isArray(am.electives)) merged.academicModule.electives = am.electives;
         if(am.grades && typeof am.grades === 'object') merged.academicModule.grades = am.grades;
         if(am.pinHash) merged.academicModule.pinHash = am.pinHash;
       }
+
+      if(parsed.calendar && Array.isArray(parsed.calendar.tasks)) merged.calendar.tasks = parsed.calendar.tasks;
 
       return merged;
     } catch(e){
@@ -1012,6 +1128,59 @@
     n = Number(n) || 0;
     return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + " ر.س";
   }
+
+  // ---------- GENERIC INLINE-EDIT MODAL (Kanban / Expenses / Electives CRUD) ----------
+  const editModal = document.getElementById('editModal');
+  const editModalTitle = document.getElementById('editModalTitle');
+  const editModalFields = document.getElementById('editModalFields');
+  const editModalSaveBtn = document.getElementById('editModalSave');
+  const editModalCancelBtn = document.getElementById('editModalCancel');
+  let editModalOnSave = null;
+  let editModalInputs = null;
+
+  function openEditModal(title, fields, onSave){
+    editModalTitle.textContent = title;
+    editModalFields.innerHTML = "";
+    editModalInputs = {};
+    fields.forEach(f => {
+      const wrap = document.createElement('div');
+      const label = document.createElement('label');
+      label.className = "block text-xs text-slate-400 mb-1";
+      label.textContent = f.label;
+      let input;
+      if(f.type === 'select'){
+        input = document.createElement('select');
+        input.className = "w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none";
+        (f.options||[]).forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.value; o.textContent = opt.label;
+          if(opt.value === f.value) o.selected = true;
+          input.append(o);
+        });
+      } else {
+        input = document.createElement('input');
+        input.type = f.type || 'text';
+        if(f.step) input.step = f.step;
+        if(f.min !== undefined) input.min = f.min;
+        input.className = "w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-accent outline-none";
+        input.value = f.value !== undefined && f.value !== null ? f.value : "";
+      }
+      wrap.append(label, input);
+      editModalFields.append(wrap);
+      editModalInputs[f.key] = input;
+    });
+    editModalOnSave = onSave;
+    editModal.classList.remove('hidden');
+  }
+
+  editModalCancelBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+  editModalSaveBtn.addEventListener('click', () => {
+    if(!editModalOnSave) return;
+    const values = {};
+    Object.keys(editModalInputs).forEach(key => { values[key] = editModalInputs[key].value; });
+    editModalOnSave(values);
+    editModal.classList.add('hidden');
+  });
 
   // ---------- PRIVACY TOGGLE (financial figures show/hide) ----------
   function isPrivacyMasked(){
@@ -1218,9 +1387,11 @@
       renderPythonChecklist();
     } else if(tab === 'academic'){
       renderKanban();
-      renderCoreCourses();
+      renderStudyPlan();
       renderElectives();
       renderGpaSection();
+    } else if(tab === 'calendar'){
+      renderCalendar();
     } else if(tab === 'dailyLog'){
       renderDailyLog();
     }
@@ -1372,6 +1543,29 @@
         const amt = document.createElement('span');
         amt.className = "font-bold text-red-300 sensitive-value";
         amt.textContent = "-" + fmtMoney(entry.amount);
+        const editBtn = document.createElement('button');
+        editBtn.className = "text-slate-500 hover:text-accent2";
+        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+        editBtn.addEventListener('click', () => {
+          openEditModal("Edit Expense", [
+            { key: 'amount', label: 'Amount', type: 'number', step: '0.01', min: '0', value: entry.amount },
+            { key: 'description', label: 'Description', type: 'text', value: entry.description },
+            { key: 'category', label: 'Platform / Category', type: 'select', value: entry.category, options: [
+              { value: 'Salla', label: 'Salla' }, { value: 'TikTok', label: 'TikTok' }, { value: 'YouTube', label: 'YouTube' },
+              { value: 'Instagram', label: 'Instagram' }, { value: 'Snapchat', label: 'Snapchat' }, { value: 'Other', label: 'Other' }
+            ]},
+            { key: 'date', label: 'Date', type: 'date', value: entry.date }
+          ], (values) => {
+            const newAmount = parseFloat(values.amount);
+            entry.amount = (!isNaN(newAmount) && newAmount > 0) ? newAmount : entry.amount;
+            entry.description = values.description.trim();
+            entry.category = values.category || entry.category;
+            entry.date = values.date || entry.date;
+            save();
+            renderExpenses();
+            renderHero();
+          });
+        });
         const del = document.createElement('button');
         del.className = "text-slate-500 hover:text-red-400";
         del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
@@ -1381,7 +1575,7 @@
           renderExpenses();
           renderHero();
         });
-        right.append(amt, del);
+        right.append(amt, editBtn, del);
 
         row.append(left, right);
         expenseListEl.append(row);
@@ -2258,11 +2452,19 @@
     });
 
     const text = document.createElement('p');
-    text.className = "text-sm text-slate-200 mb-2 break-words";
+    text.className = "text-sm text-slate-200 mb-1 break-words";
     text.textContent = task.text;
+    card.append(text);
+
+    if(task.scheduledDate){
+      const dateBadge = document.createElement('p');
+      dateBadge.className = "text-[11px] text-accent2 mb-2";
+      dateBadge.innerHTML = `<i class="fa-solid fa-calendar-day mr-1"></i>${task.scheduledDate}`;
+      card.append(dateBadge);
+    }
 
     const controls = document.createElement('div');
-    controls.className = "flex items-center gap-1.5";
+    controls.className = "flex items-center gap-1.5 mt-2";
 
     const order = ['pending', 'inProgress', 'completed'];
     const curIdx = order.indexOf(status);
@@ -2281,19 +2483,37 @@
       nextBtn.addEventListener('click', () => moveKanbanTask(task.id, status, order[curIdx + 1]));
       controls.append(nextBtn);
     }
+    const editBtn = document.createElement('button');
+    editBtn.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-400 hover:text-accent2 hover:border-accent2 ml-auto";
+    editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+    editBtn.addEventListener('click', () => {
+      openEditModal("Edit Task", [
+        { key: 'text', label: 'Task', type: 'text', value: task.text }
+      ], (values) => {
+        task.text = values.text.trim() || task.text;
+        save();
+        renderKanban();
+      });
+    });
+    controls.append(editBtn);
     const del = document.createElement('button');
-    del.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-500 hover:text-red-400 hover:border-red-400 ml-auto";
+    del.className = "text-xs bg-base border border-border rounded px-2 py-1 text-slate-500 hover:text-red-400 hover:border-red-400";
     del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
     del.addEventListener('click', () => {
       const arr = kanbanArr(status);
       const idx = arr.findIndex(t => t.id === task.id);
       if(idx >= 0) arr.splice(idx, 1);
+      if(task.calendarTaskId){
+        const ci = data.calendar.tasks.findIndex(t => t.id === task.calendarTaskId);
+        if(ci >= 0) data.calendar.tasks.splice(ci, 1);
+      }
       save();
       renderKanban();
+      renderCalendar();
     });
     controls.append(del);
 
-    card.append(text, controls);
+    card.append(controls);
     return card;
   }
 
@@ -2350,38 +2570,123 @@
     renderKanban();
   });
 
-  // -- Completed core courses (public) --
-  function renderCoreCourses(){
-    const wrap = document.getElementById('coreCoursesList');
+  // -- Study Plan: Year → Semester, with prerequisite locking (public, no PIN) --
+  function isCourseCompleted(code){ return !!data.academicModule.completedCourses[code]; }
+
+  function totalCompletedCredits(){
+    return allPlanCourses().reduce((sum, c) => sum + (isCourseCompleted(c.code) ? (Number(c.credits)||0) : 0), 0);
+  }
+
+  function courseByCode(code){ return allPlanCourses().find(c => c.code === code); }
+
+  function isCourseLocked(course){
+    if(course.creditPre){ return totalCompletedCredits() < course.creditPre; }
+    if(!course.pre || course.pre.length === 0) return false;
+    return course.pre.some(code => !isCourseCompleted(code));
+  }
+
+  function renderStudyPlan(){
+    const wrap = document.getElementById('studyPlanWrap');
     wrap.innerHTML = "";
     let doneCount = 0, doneCredits = 0;
-    CORE_COURSES_SEED.forEach(course => {
-      const checked = !!data.academicModule.coreCourses[course.id];
-      if(checked){ doneCount++; doneCredits += course.credits; }
+    const allCourses = allPlanCourses();
 
-      const row = document.createElement('button');
-      row.type = "button";
-      row.className = "flex items-center gap-3 text-left bg-panel2 border rounded-lg px-3 py-2.5 transition " +
-        (checked ? "border-emerald-400 bg-emerald-500/10" : "border-border hover:border-emerald-400/50");
-      const check = document.createElement('span');
-      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
-        (checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
-      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
-      const label = document.createElement('span');
-      label.className = "flex-1 text-sm " + (checked ? "text-slate-200" : "text-slate-300");
-      label.textContent = course.name;
-      const credits = document.createElement('span');
-      credits.className = "text-xs text-slate-500 flex-shrink-0";
-      credits.textContent = `${course.credits} cr`;
-      row.append(check, label, credits);
-      row.addEventListener('click', () => {
-        data.academicModule.coreCourses[course.id] = !data.academicModule.coreCourses[course.id];
-        save();
-        renderCoreCourses();
+    STUDY_PLAN.forEach(yearBlock => {
+      const details = document.createElement('details');
+      details.className = "bg-panel2/40 border border-border rounded-xl overflow-hidden";
+      details.open = true;
+      const summary = document.createElement('summary');
+      summary.className = "cursor-pointer px-4 py-3 font-semibold text-white flex items-center gap-2";
+      summary.innerHTML = `<i class="fa-solid fa-layer-group text-indigo-300"></i>Year ${yearBlock.year} <span class="opacity-60 text-xs font-normal">/ السنة ${yearBlock.year}</span>`;
+      details.append(summary);
+
+      const body = document.createElement('div');
+      body.className = "px-4 pb-4 space-y-4";
+
+      yearBlock.semesters.forEach(sem => {
+        const semWrap = document.createElement('div');
+        const semTitle = document.createElement('h4');
+        semTitle.className = "text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2";
+        semTitle.textContent = sem.label;
+        semWrap.append(semTitle);
+
+        const grid = document.createElement('div');
+        grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+
+        sem.courses.forEach(course => {
+          const checked = isCourseCompleted(course.code);
+          const locked = !checked && isCourseLocked(course);
+          if(checked){ doneCount++; doneCredits += Number(course.credits)||0; }
+
+          const row = document.createElement('button');
+          row.type = "button";
+          row.className = "flex items-start gap-3 text-left border rounded-lg px-3 py-2.5 transition " +
+            (checked ? "border-emerald-400 bg-emerald-500/10" :
+             locked ? "border-border bg-base/40 opacity-60 cursor-not-allowed" :
+             "border-border bg-panel2 hover:border-emerald-400/50");
+
+          const check = document.createElement('span');
+          check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 " +
+            (checked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
+          check.innerHTML = locked ? '<i class="fa-solid fa-lock text-[10px] text-slate-500"></i>' : '<i class="fa-solid fa-check text-xs"></i>';
+
+          const textWrap = document.createElement('span');
+          textWrap.className = "flex-1 min-w-0";
+          const nameLine = document.createElement('span');
+          nameLine.className = "block text-sm " + (checked ? "text-slate-200" : locked ? "text-slate-500" : "text-slate-300");
+          nameLine.textContent = `[${course.code}] ${course.en}`;
+          const arLine = document.createElement('span');
+          arLine.className = "block text-xs " + (checked ? "text-slate-400" : "text-slate-500");
+          arLine.textContent = course.ar;
+          textWrap.append(nameLine, arLine);
+
+          if(locked){
+            const preLine = document.createElement('span');
+            preLine.className = "block text-[11px] text-red-400/80 mt-1";
+            if(course.creditPre){
+              preLine.textContent = `Requires ${course.creditPre} completed credit hours (متطلب سابق: ${course.creditPre} ساعة معتمدة)`;
+            } else {
+              const preNames = course.pre.map(code => {
+                const pc = courseByCode(code);
+                return pc ? `${code}` : code;
+              }).join(', ');
+              preLine.textContent = `متطلب سابق (Prerequisite): ${preNames}`;
+            }
+            textWrap.append(preLine);
+          } else if(course.pre && course.pre.length){
+            const preLine = document.createElement('span');
+            preLine.className = "block text-[11px] text-slate-500 mt-1";
+            preLine.textContent = `Pre: ${course.pre.join(', ')}`;
+            textWrap.append(preLine);
+          }
+
+          const credits = document.createElement('span');
+          credits.className = "text-xs text-slate-500 flex-shrink-0 mt-0.5";
+          credits.textContent = course.credits > 0 ? `${course.credits} cr` : '';
+          row.append(check, textWrap, credits);
+
+          row.addEventListener('click', () => {
+            if(locked){
+              toast("Locked — complete the prerequisite course(s) first", "fa-lock");
+              return;
+            }
+            data.academicModule.completedCourses[course.code] = !data.academicModule.completedCourses[course.code];
+            save();
+            renderStudyPlan();
+            renderGpaSection();
+          });
+          grid.append(row);
+        });
+
+        semWrap.append(grid);
+        body.append(semWrap);
       });
-      wrap.append(row);
+
+      details.append(body);
+      wrap.append(details);
     });
-    document.getElementById('coreCoursesTotal').textContent = CORE_COURSES_SEED.length;
+
+    document.getElementById('coreCoursesTotal').textContent = allCourses.length;
     document.getElementById('coreCoursesDone').textContent = doneCount;
     document.getElementById('coreCreditsDone').textContent = doneCredits;
   }
@@ -2424,15 +2729,38 @@
         metaP.className = "text-xs text-slate-500";
         metaP.textContent = `${el.type === 'Program' ? 'Program Elective' : 'University Elective / مادة عامة'} · ${el.credits} cr`;
         left.append(nameP, metaP);
+        const actions = document.createElement('div');
+        actions.className = "flex items-center gap-2 flex-shrink-0";
+        const editBtn = document.createElement('button');
+        editBtn.className = "text-slate-500 hover:text-accent2";
+        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+        editBtn.addEventListener('click', () => {
+          openEditModal("Edit Elective", [
+            { key: 'name', label: 'Course name', type: 'text', value: el.name },
+            { key: 'type', label: 'Type', type: 'select', value: el.type, options: [
+              { value: 'University', label: 'University Elective / مادة عامة' },
+              { value: 'Program', label: 'Program Elective' }
+            ]},
+            { key: 'credits', label: 'Credit hours', type: 'number', min: '0', value: el.credits }
+          ], (values) => {
+            el.name = values.name.trim() || el.name;
+            el.type = values.type || el.type;
+            el.credits = parseInt(values.credits, 10) || 0;
+            save();
+            renderElectives();
+            renderGpaSection();
+          });
+        });
         const del = document.createElement('button');
-        del.className = "text-slate-500 hover:text-red-400 flex-shrink-0";
+        del.className = "text-slate-500 hover:text-red-400";
         del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
         del.addEventListener('click', () => {
           data.academicModule.electives.splice(idx, 1);
           save();
           renderElectives();
         });
-        row.append(left, del);
+        actions.append(editBtn, del);
+        row.append(left, actions);
         wrap.append(row);
       });
     }
@@ -2517,9 +2845,11 @@
   gpaPinInput.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('gpaPinSubmit').click(); });
 
   function gpaGradableCourses(){
-    const core = CORE_COURSES_SEED.filter(c => data.academicModule.coreCourses[c.id]).map(c => ({ key: c.id, name: c.name, credits: c.credits }));
+    const completed = allPlanCourses()
+      .filter(c => isCourseCompleted(c.code) && c.gradable !== false)
+      .map(c => ({ key: c.code, name: `[${c.code}] ${c.en}`, credits: c.credits }));
     const electives = data.academicModule.electives.map(e => ({ key: 'elective-' + e.id, name: e.name, credits: Number(e.credits)||0 }));
-    return core.concat(electives);
+    return completed.concat(electives);
   }
 
   function computeGpa(){
@@ -2581,6 +2911,182 @@
       wrap.append(row);
     });
   }
+
+  // ---------- INTERACTIVE CALENDAR & TASK SCHEDULING ----------
+  let calViewYear = new Date().getFullYear();
+  let calViewMonth = new Date().getMonth(); // 0-11
+  let calSelectedDate = todayStr();
+
+  function dateKey(y, m, d){
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+
+  function tasksForDate(dateStr){
+    return data.calendar.tasks.filter(t => t.date === dateStr);
+  }
+
+  function renderCalendar(){
+    const grid = document.getElementById('calGrid');
+    const monthLabel = document.getElementById('calMonthLabel');
+    grid.innerHTML = "";
+
+    const first = new Date(calViewYear, calViewMonth, 1);
+    monthLabel.textContent = first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+    const startDow = first.getDay(); // 0 = Sun
+    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+    const today = todayStr();
+
+    for(let i = 0; i < startDow; i++){
+      grid.append(document.createElement('div'));
+    }
+
+    for(let d = 1; d <= daysInMonth; d++){
+      const ds = dateKey(calViewYear, calViewMonth, d);
+      const dayTasks = tasksForDate(ds);
+      const doneCount = dayTasks.filter(t => t.done).length;
+
+      const cell = document.createElement('button');
+      cell.type = "button";
+      const isToday = ds === today;
+      const isSelected = ds === calSelectedDate;
+      cell.className = "aspect-square rounded-lg border text-sm flex flex-col items-center justify-center gap-0.5 transition relative " +
+        (isSelected ? "border-accent bg-accent/20 text-white" :
+         isToday ? "border-accent2 text-white" :
+         "border-border bg-panel2 text-slate-300 hover:border-accent/50");
+      const num = document.createElement('span');
+      num.textContent = d;
+      cell.append(num);
+      if(dayTasks.length > 0){
+        const dot = document.createElement('span');
+        dot.className = "w-1.5 h-1.5 rounded-full " + (doneCount === dayTasks.length ? "bg-emerald-400" : "bg-amber-400");
+        cell.append(dot);
+      }
+      cell.addEventListener('click', () => {
+        calSelectedDate = ds;
+        renderCalendar();
+      });
+      grid.append(cell);
+    }
+
+    document.getElementById('calSelectedDateLabel').textContent =
+      new Date(calSelectedDate + "T00:00:00").toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+    renderCalTaskList();
+  }
+
+  function renderCalTaskList(){
+    const wrap = document.getElementById('calTaskList');
+    wrap.innerHTML = "";
+    const tasks = tasksForDate(calSelectedDate);
+    if(tasks.length === 0){
+      wrap.append(emptyStateEl('fa-calendar-plus', "No tasks scheduled for this day."));
+      return;
+    }
+    tasks.forEach(task => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+      const check = document.createElement('button');
+      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+        (task.done ? "bg-emerald-500 border-emerald-500 text-white" : "border-border text-transparent");
+      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      check.addEventListener('click', () => {
+        task.done = !task.done;
+        if(task.kanbanTaskId){
+          for(const s of ['pending', 'inProgress', 'completed']){
+            const t = kanbanArr(s).find(kt => kt.id === task.kanbanTaskId);
+            if(t){ moveKanbanTask(t.id, s, task.done ? 'completed' : 'pending'); break; }
+          }
+        }
+        save();
+        renderCalendar();
+      });
+
+      const label = document.createElement('span');
+      label.className = "flex-1 text-sm " + (task.done ? "todo-done" : "text-slate-200");
+      label.textContent = task.text;
+
+      const editBtn = document.createElement('button');
+      editBtn.className = "text-slate-500 hover:text-accent2";
+      editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      editBtn.addEventListener('click', () => {
+        openEditModal("Edit Scheduled Task", [
+          { key: 'text', label: 'Task', type: 'text', value: task.text },
+          { key: 'date', label: 'Date', type: 'date', value: task.date }
+        ], (values) => {
+          task.text = values.text.trim() || task.text;
+          if(values.date) task.date = values.date;
+          if(task.kanbanTaskId){
+            for(const s of ['pending', 'inProgress', 'completed']){
+              const t = kanbanArr(s).find(kt => kt.id === task.kanbanTaskId);
+              if(t){ t.text = task.text; t.scheduledDate = task.date; break; }
+            }
+          }
+          save();
+          calSelectedDate = task.date;
+          renderCalendar();
+          renderKanban();
+        });
+      });
+
+      const del = document.createElement('button');
+      del.className = "text-slate-500 hover:text-red-400";
+      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      del.addEventListener('click', () => {
+        const idx = data.calendar.tasks.findIndex(t => t.id === task.id);
+        if(idx >= 0) data.calendar.tasks.splice(idx, 1);
+        if(task.kanbanTaskId){
+          for(const s of ['pending', 'inProgress', 'completed']){
+            const arr = kanbanArr(s);
+            const ki = arr.findIndex(kt => kt.id === task.kanbanTaskId);
+            if(ki >= 0){ arr.splice(ki, 1); break; }
+          }
+        }
+        save();
+        renderCalendar();
+        renderKanban();
+      });
+
+      row.append(check, label, editBtn, del);
+      wrap.append(row);
+    });
+  }
+
+  document.getElementById('calPrevMonth').addEventListener('click', () => {
+    calViewMonth--;
+    if(calViewMonth < 0){ calViewMonth = 11; calViewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('calNextMonth').addEventListener('click', () => {
+    calViewMonth++;
+    if(calViewMonth > 11){ calViewMonth = 0; calViewYear++; }
+    renderCalendar();
+  });
+  document.getElementById('calTodayBtn').addEventListener('click', () => {
+    const now = new Date();
+    calViewYear = now.getFullYear();
+    calViewMonth = now.getMonth();
+    calSelectedDate = todayStr();
+    renderCalendar();
+  });
+
+  document.getElementById('calTaskForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('calTaskInput');
+    const text = input.value.trim();
+    if(!text) return;
+    const kanbanTaskId = Date.now() + Math.random().toString(36).slice(2);
+    const calTaskId = Date.now() + Math.random().toString(36).slice(2, 8) + 'c';
+    const isPast = calSelectedDate < todayStr();
+    data.calendar.tasks.push({ id: calTaskId, text, date: calSelectedDate, done: isPast, kanbanTaskId });
+    kanbanArr(isPast ? 'completed' : 'pending').push({ id: kanbanTaskId, text, scheduledDate: calSelectedDate, calendarTaskId: calTaskId });
+    input.value = "";
+    save();
+    renderCalendar();
+    renderKanban();
+    toast("Task scheduled & linked to Kanban board", "fa-calendar-check");
+  });
 
   // ---------- DAILY LOG (HISTORICAL ARCHIVE) ----------
   function renderDailyLog(){
@@ -2757,9 +3263,10 @@
     renderSrsUmlChecklist();
     renderPythonChecklist();
     renderKanban();
-    renderCoreCourses();
+    renderStudyPlan();
     renderElectives();
     renderGpaSection();
+    renderCalendar();
     renderOverviewTodos();
     renderOverviewWidgets();
     renderDailyLog();
