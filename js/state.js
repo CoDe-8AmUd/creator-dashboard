@@ -7,11 +7,9 @@
 // pattern the rest of the app already relies on; only a full swap-out
 // (import/reset/remote update) goes through setData().
 // =====================================================================
-import { db, doc, setDoc, onSnapshot, serverTimestamp } from "./firebase.js";
+import { db, doc, setDoc, onSnapshot, serverTimestamp, collection, arrayUnion } from "./firebase.js";
 
-export const STORAGE_KEY = "creatorDashboardData_v2";
-export const LEGACY_STORAGE_KEY = "creatorDashboardData_v1";
-export const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'dailyLog', 'vault', 'settings'];
+export const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'vault', 'settings'];
 export const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
 export const GRADE_POINTS = { 'A+': 5, 'A': 4.75, 'B+': 4.5, 'B': 4, 'C+': 3.5, 'C': 3, 'D+': 2.5, 'D': 2, 'F': 0 };
 
@@ -276,17 +274,6 @@ export function normalizeData(parsed){
   }
 }
 
-export function loadLocalData(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-    if(!raw) return structuredClone(defaultData);
-    return normalizeData(JSON.parse(raw));
-  } catch(e){
-    console.warn("Failed to load local data, using defaults", e);
-    return structuredClone(defaultData);
-  }
-}
-
 export let data = structuredClone(defaultData);
 
 /** Swap out the entire data object (import / reset / remote overwrite from outside this module). */
@@ -319,7 +306,7 @@ function setSyncStatus(state){
     label.textContent = "Syncing…";
   } else if(state === 'offline'){
     icon.className = "fa-solid fa-cloud-slash text-amber-400";
-    label.textContent = "Offline (local only)";
+    label.textContent = "Connection issue — retrying";
   } else {
     icon.className = "fa-solid fa-cloud-arrow-up text-accent2";
     label.textContent = "Synced";
@@ -338,6 +325,7 @@ export function setCurrentUser(uid){
 export function clearCurrentUser(){
   currentUser = null;
   if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+  detachActivityLogSync();
   lastPushedJson = null;
 }
 
@@ -348,7 +336,7 @@ export function attachCloudSync(uid){
     if(!snap.exists()){
       lastPushedJson = JSON.stringify(data);
       setDoc(ref, { state: data, updatedAt: serverTimestamp() }).catch(err => {
-        console.warn("Initial cloud push failed (working offline):", err);
+        console.warn("Initial cloud push failed:", err);
         setSyncStatus('offline');
       });
       setSyncStatus('synced');
@@ -376,17 +364,49 @@ function pushToCloud(){
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer = setTimeout(() => {
     lastPushedJson = JSON.stringify(data);
-    setDoc(doc(db, 'users', currentUser.uid), { state: data, updatedAt: serverTimestamp() })
+    setDoc(doc(db, 'users', currentUser), { state: data, updatedAt: serverTimestamp() })
       .then(() => setSyncStatus('synced'))
       .catch(err => {
-        console.warn("Cloud sync failed — data safely stored locally:", err);
+        console.warn("Cloud sync failed:", err);
         setSyncStatus('offline');
       });
   }, 350);
 }
 
 export function save(){
-  // Always persist locally first (offline fallback), then push to the cloud when signed in.
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  // 100% cloud-synced: every save goes straight to Firestore under users/{uid} — no localStorage.
   pushToCloud();
+}
+
+// ---------- ACTIVITY LOG SUBCOLLECTION (users/{uid}/activityLog/{YYYY-MM-DD}) ----------
+// Kept separate from the main users/{uid} document so completed-activity events (To-Do,
+// Habit, Pomodoro) append cheaply via arrayUnion without rewriting the whole app state,
+// and so the Mini Daily Log Calendar can subscribe to just this collection.
+let unsubscribeActivityLog = null;
+
+export function logActivityEvent(uid, text, icon){
+  if(!uid) return;
+  const today = todayStr();
+  const ref = doc(db, 'users', uid, 'activityLog', today);
+  const entry = { id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, text, icon: icon || 'fa-check', at: new Date().toISOString() };
+  setDoc(ref, { entries: arrayUnion(entry) }, { merge: true }).catch(err => {
+    console.warn("Failed to write activity log entry:", err);
+  });
+}
+
+/** Subscribes to users/{uid}/activityLog and calls cb({ 'YYYY-MM-DD': [entries] }) on every change. */
+export function attachActivityLogSync(uid, cb){
+  if(unsubscribeActivityLog) unsubscribeActivityLog();
+  const ref = collection(db, 'users', uid, 'activityLog');
+  unsubscribeActivityLog = onSnapshot(ref, (snap) => {
+    const byDate = {};
+    snap.forEach(d => { byDate[d.id] = Array.isArray(d.data().entries) ? d.data().entries : []; });
+    cb(byDate);
+  }, (err) => {
+    console.warn("Activity log sync error:", err);
+  });
+}
+
+export function detachActivityLogSync(){
+  if(unsubscribeActivityLog){ unsubscribeActivityLog(); unsubscribeActivityLog = null; }
 }

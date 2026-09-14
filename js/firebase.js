@@ -11,7 +11,8 @@ import {
   signOut, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, onSnapshot, serverTimestamp, enableIndexedDbPersistence
+  getFirestore, doc, setDoc, onSnapshot, serverTimestamp,
+  collection, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -31,7 +32,6 @@ const firebaseReady = true;
 const googleProvider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
-enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
 analyticsIsSupported().then(supported => {
   if(supported){ try { getAnalytics(firebaseApp); } catch(e){ console.warn("Analytics init skipped:", e); } }
 }).catch(() => {});
@@ -39,5 +39,5 @@ analyticsIsSupported().then(supported => {
 export {
   firebaseApp, auth, db, firebaseReady, googleProvider,
   onAuthStateChanged, signInWithPopup, signOut,
-  doc, setDoc, onSnapshot, serverTimestamp
+  doc, setDoc, onSnapshot, serverTimestamp, collection, arrayUnion
 };
