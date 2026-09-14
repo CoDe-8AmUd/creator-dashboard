@@ -165,7 +165,10 @@ export const defaultData = {
   // Resource & Link Vault
   resourceVault: {
     links: []       // { id, title, url, category, tags: [] }
-  }
+  },
+
+  // Daily Activity Log (Main Dashboard) — { id, text, icon, at: ISOString }, newest first, capped to 50
+  activityLog: []
 };
 
 export function todayStr(){
@@ -263,6 +266,8 @@ export function normalizeData(parsed){
     if(parsed.resourceVault && Array.isArray(parsed.resourceVault.links)){
       merged.resourceVault.links = parsed.resourceVault.links;
     }
+
+    if(Array.isArray(parsed.activityLog)) merged.activityLog = parsed.activityLog;
 
     return merged;
   } catch(e){

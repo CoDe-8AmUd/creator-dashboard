@@ -124,7 +124,7 @@
 </head>
 <body class="bg-base text-slate-200 min-h-screen font-sans antialiased">
 
-<!-- AUTH SCREEN (Firebase Email/Password) -->
+<!-- AUTH SCREEN (Firebase Google Sign-In only) -->
 <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-base/90 backdrop-blur-xl">
   <div class="card glow fade-in rounded-2xl p-8 w-[90%] max-w-sm text-center">
     <div class="w-16 h-16 mx-auto rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
@@ -132,12 +132,10 @@
     </div>
     <h1 class="text-xl font-bold text-white mb-1" id="authTitle">Creator Dashboard</h1>
     <p class="text-sm text-slate-400 mb-6" id="authSubtitle">Sign in to continue</p>
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" class="w-full bg-panel2 border border-border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:border-accent outline-none mb-3" />
-    <button id="authSubmitBtn" class="w-full bg-accent hover:bg-indigo-500 transition text-white font-semibold py-3 rounded-lg mb-3">
-      <i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In
+    <button id="authGoogleBtn" class="w-full bg-white hover:bg-slate-100 transition text-slate-800 font-semibold py-3 rounded-lg mb-3 flex items-center justify-center gap-2.5">
+      <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.3 18.9 12 24 12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 15.3 3 7.9 7.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.4 0 10.3-1.8 14.1-5.1l-6.5-5.5C29.5 36.1 26.9 37 24 37c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.8 40.1 16.4 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4 5.7l6.5 5.5C41.4 36 45 30.6 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Sign in with Google
     </button>
-    <button id="authToggleModeBtn" type="button" class="text-xs text-slate-400 hover:text-accent2 transition">Don't have an account? Create one</button>
     <p id="authError" class="text-red-400 text-sm mt-3 hidden"></p>
     <p id="authStatus" class="text-slate-500 text-xs mt-4"></p>
   </div>
@@ -296,6 +294,21 @@
             <i class="fa-solid fa-list-check text-indigo-300"></i>
           </div>
           <ul id="ovTodoList" class="space-y-2 text-sm"></ul>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-semibold text-white"><i class="fa-solid fa-calendar-day text-accent2 mr-2"></i>Today's Schedule <span class="opacity-60 text-xs">/ جدول اليوم</span></h2>
+            <span id="scheduleTodayLabel" class="text-xs text-slate-500"></span>
+          </div>
+          <div id="scheduleList" class="space-y-2"></div>
+        </div>
+
+        <div class="card rounded-2xl p-5">
+          <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-timeline text-purple-300 mr-2"></i>Daily Activity Log <span class="opacity-60 text-xs">/ سجل النشاط اليومي</span></h2>
+          <div id="dailyActivityLog" class="space-y-2 max-h-72 overflow-y-auto"></div>
         </div>
       </section>
 
@@ -809,8 +822,8 @@
   // 🔥 FIREBASE SETUP
   // =====================================================================
   import {
-    auth, firebaseReady,
-    onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+    auth, firebaseReady, googleProvider,
+    onAuthStateChanged, signInWithPopup, signOut
   } from "./js/firebase.js";
   import { createHabitCalendar } from "./js/calendar.js";
   import {
@@ -941,38 +954,13 @@
   applyTheme();
 
   // =====================================================================
-  // 🔐 FIREBASE AUTHENTICATION (Email & Password)
+  // 🔐 FIREBASE AUTHENTICATION (Google Sign-In only)
   // =====================================================================
   const authScreen = document.getElementById('authScreen');
   const app = document.getElementById('app');
-  const authEmail = document.getElementById('authEmail');
-  const authPassword = document.getElementById('authPassword');
   const authError = document.getElementById('authError');
   const authStatus = document.getElementById('authStatus');
-  const authSubmitBtn = document.getElementById('authSubmitBtn');
-  const authToggleModeBtn = document.getElementById('authToggleModeBtn');
-  const authTitle = document.getElementById('authTitle');
-  const authSubtitle = document.getElementById('authSubtitle');
-
-  let authMode = 'signin';
-
-  function setAuthMode(mode){
-    authMode = mode;
-    authError.classList.add('hidden');
-    if(mode === 'signup'){
-      authTitle.textContent = "Create Account";
-      authSubtitle.textContent = "Sign up to sync your dashboard everywhere";
-      authSubmitBtn.innerHTML = '<i class="fa-solid fa-user-plus mr-2"></i>Create Account';
-      authToggleModeBtn.textContent = "Already have an account? Sign in";
-    } else {
-      authTitle.textContent = "Creator Dashboard";
-      authSubtitle.textContent = "Sign in to continue";
-      authSubmitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In';
-      authToggleModeBtn.textContent = "Don't have an account? Create one";
-    }
-  }
-
-  authToggleModeBtn.addEventListener('click', () => setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
+  const authGoogleBtn = document.getElementById('authGoogleBtn');
 
   function friendlyAuthError(err){
     const code = err && err.code;
@@ -980,42 +968,31 @@
       return "Your Firebase API key is invalid. Paste your real project keys into the firebaseConfig block near the top of the script.";
     }
     if(code === 'auth/network-request-failed') return "Network error — check your internet connection and try again.";
-    if(code === 'auth/email-already-in-use') return "That email already has an account — try signing in instead.";
-    if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return "Incorrect email or password.";
-    if(code === 'auth/weak-password') return "Password should be at least 6 characters.";
+    if(code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return "";
+    if(code === 'auth/popup-blocked') return "Your browser blocked the sign-in popup — allow popups for this site and try again.";
     return (err && err.message) ? err.message.replace('Firebase: ', '') : "Authentication failed";
   }
 
-  async function handleAuthSubmit(){
-    const email = authEmail.value.trim();
-    const password = authPassword.value;
-    if(!email || !password){
-      authError.textContent = "Enter your email and password";
-      authError.classList.remove('hidden');
-      return;
-    }
-    authSubmitBtn.disabled = true;
-    authStatus.textContent = authMode === 'signup' ? "Creating your account…" : "Signing you in…";
+  async function handleGoogleSignIn(){
+    authGoogleBtn.disabled = true;
+    authStatus.textContent = "Signing you in…";
     try {
-      if(authMode === 'signup'){
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
+      await signInWithPopup(auth, googleProvider);
       authError.classList.add('hidden');
     } catch(err){
       console.warn("Auth error:", err);
-      authError.textContent = friendlyAuthError(err);
-      authError.classList.remove('hidden');
+      const msg = friendlyAuthError(err);
+      if(msg){
+        authError.textContent = msg;
+        authError.classList.remove('hidden');
+      }
     } finally {
-      authSubmitBtn.disabled = false;
+      authGoogleBtn.disabled = false;
       authStatus.textContent = "";
     }
   }
 
-  authSubmitBtn.addEventListener('click', handleAuthSubmit);
-  authPassword.addEventListener('keydown', e => { if(e.key === 'Enter') handleAuthSubmit(); });
-  authEmail.addEventListener('keydown', e => { if(e.key === 'Enter') authPassword.focus(); });
+  authGoogleBtn.addEventListener('click', handleGoogleSignIn);
 
   document.getElementById('lockBtn').addEventListener('click', () => {
     signOut(auth).catch(err => console.warn("Sign out failed:", err));
@@ -1036,9 +1013,6 @@
       clearCurrentUser();
       app.classList.add('hidden');
       authScreen.classList.remove('hidden');
-      authEmail.value = "";
-      authPassword.value = "";
-      setAuthMode('signin');
     }
   }, (err) => {
     console.warn("Auth state listener error:", err);
@@ -2046,6 +2020,7 @@
         (isDone ? "bg-sky-500 border-sky-500 text-white" : "border-border text-transparent");
       check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
       check.addEventListener('click', () => {
+        const willBeDone = !isDone;
         if(t.recurrence === 'daily'){
           t.doneDate = isDone ? "" : today;
         } else {
@@ -2054,6 +2029,7 @@
         save();
         renderTodos();
         renderOverviewTodos();
+        if(willBeDone) logActivity(`Completed to-do: ${t.text}`, 'fa-list-check');
       });
 
       const body = document.createElement('div');
@@ -2224,9 +2200,11 @@
         (todayChecks[name] ? "bg-orange-500 border-orange-500 text-white" : "border-border text-transparent");
       check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
       check.addEventListener('click', () => {
-        todayChecks[name] = !todayChecks[name];
+        const willBeChecked = !todayChecks[name];
+        todayChecks[name] = willBeChecked;
         save();
         renderHabitTracker();
+        if(willBeChecked) logActivity(`Checked habit: ${name}`, 'fa-square-check');
       });
       const span = document.createElement('span');
       span.className = "flex-1 text-sm text-slate-200";
@@ -2280,6 +2258,7 @@
         toast("Pomodoro session complete!", "fa-check");
         renderPomodoro();
         safeRender(renderWeeklyAnalytics);
+        logActivity("Completed a Pomodoro session", 'fa-hourglass-end');
         return;
       }
       const mins = Math.floor(remaining / 60000);
@@ -3126,6 +3105,90 @@
     });
   }
 
+  // ---------- TODAY'S SCHEDULE (static weekly class schedule) ----------
+  const SCHEDULE = {
+    "Sunday": [
+      { name: "معمارية وتنظيم الحاسب", type: "نظري", time: "10:30-11:45", location: "مبنى 15 - 0152058", instructor: "د. راما سامي" },
+      { name: "كتابة التقارير التقنية", type: "نظري", time: "13:00-14:15", location: "مبنى 15 - 0151151", instructor: "د. محمد بونيس" },
+      { name: "معمارية وتنظيم الحاسب", type: "عملي", time: "14:19-15:59", location: "مبنى 15 - 0152066", instructor: "أ. نفيد رسول" }
+    ],
+    "Monday": [
+      { name: "مفاهيم وتصميم قواعد البيانات", type: "نظري", time: "09:00-10:15", location: "مبنى 15 - 0152059", instructor: "د. محمد بونيس" },
+      { name: "تنظيم الأعمال والإدارة", type: "نظري", time: "13:00-14:15", location: "مبنى 15 - 0151151", instructor: "د. عبدالرحيم أحمد" },
+      { name: "تحليل وتصميم نظم المعلومات", type: "عملي", time: "14:19-15:59", location: "مبنى 15 - 0151230", instructor: "أ. توصيف رنا" },
+      { name: "تحليل وتصميم نظم المعلومات", type: "نظري", time: "16:00-17:15", location: "مبنى 15 - 0151147", instructor: "د. توصيف رنا" }
+    ],
+    "Tuesday": [
+      { name: "مفاهيم وتصميم قواعد البيانات", type: "عملي", time: "08:30-10:10", location: "مبنى 15 - 0151241", instructor: "أ. محمد عاصم" }
+    ],
+    "Wednesday": [
+      { name: "مفاهيم وتصميم قواعد البيانات", type: "نظري", time: "09:00-10:15", location: "مبنى 15 - 0152059", instructor: "د. محمد بونيس" },
+      { name: "تنظيم الأعمال والإدارة", type: "نظري", time: "13:00-14:15", location: "مبنى 15 - 0151151", instructor: "د. عبدالرحيم أحمد" },
+      { name: "تحليل وتصميم نظم المعلومات", type: "نظري", time: "16:00-17:15", location: "مبنى 15 - 0151147", instructor: "د. توصيف رنا" }
+    ],
+    "Thursday": [
+      { name: "معمارية وتنظيم الحاسب", type: "نظري", time: "10:30-11:45", location: "مبنى 15 - 0152058", instructor: "د. راما سامي" },
+      { name: "كتابة التقارير التقنية", type: "نظري", time: "13:00-14:15", location: "مبنى 15 - 0151151", instructor: "د. محمد بونيس" }
+    ]
+  };
+  const DOW_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  function renderSchedule(){
+    const list = document.getElementById('scheduleList');
+    const label = document.getElementById('scheduleTodayLabel');
+    if(!list) return;
+    const dayName = DOW_NAMES[new Date().getDay()];
+    label.textContent = dayName;
+    const classes = SCHEDULE[dayName] || [];
+    list.innerHTML = "";
+    if(!classes.length){
+      list.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">No classes today — enjoy the break 🎉</p>';
+      return;
+    }
+    classes.forEach(c => {
+      const row = document.createElement('div');
+      row.className = "bg-panel2 border border-border rounded-xl px-4 py-3";
+      row.innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <p class="font-semibold text-white text-sm">${c.name}</p>
+          <span class="text-xs px-2 py-0.5 rounded-full ${c.type === 'عملي' ? 'bg-blue-500/20 text-blue-300' : 'bg-emerald-500/20 text-emerald-300'}">${c.type}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-slate-400">
+          <span><i class="fa-solid fa-clock mr-1"></i>${c.time}</span>
+          <span><i class="fa-solid fa-location-dot mr-1"></i>${c.location}</span>
+          <span><i class="fa-solid fa-chalkboard-user mr-1"></i>${c.instructor}</span>
+        </div>`;
+      list.append(row);
+    });
+  }
+
+  // ---------- DAILY ACTIVITY LOG ----------
+  function ensureActivityLog(){ if(!Array.isArray(data.activityLog)) data.activityLog = []; }
+  function logActivity(text, icon){
+    ensureActivityLog();
+    data.activityLog.unshift({ id: genId(), text, icon: icon || 'fa-check', at: new Date().toISOString() });
+    if(data.activityLog.length > 50) data.activityLog.length = 50;
+    save();
+    safeRender(renderActivityLog);
+  }
+  function renderActivityLog(){
+    ensureActivityLog();
+    const wrap = document.getElementById('dailyActivityLog');
+    if(!wrap) return;
+    wrap.innerHTML = "";
+    if(!data.activityLog.length){
+      wrap.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">No activity yet today — complete a task, habit, or Pomodoro session.</p>';
+      return;
+    }
+    data.activityLog.forEach(entry => {
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2 text-sm";
+      const time = new Date(entry.at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      row.innerHTML = `<i class="fa-solid ${entry.icon} text-accent2 w-4"></i><span class="flex-1 text-slate-200">${entry.text}</span><span class="text-xs text-slate-500">${time}</span>`;
+      wrap.append(row);
+    });
+  }
+
   // ---------- OVERVIEW WIDGETS ----------
   function renderOverviewWidgets(){
     const ml = Number(data.water.ml) || 0;
@@ -3230,6 +3293,8 @@
     safeRender(renderHabitCalendar);
     safeRender(renderOverviewTodos);
     safeRender(renderOverviewWidgets);
+    safeRender(renderSchedule);
+    safeRender(renderActivityLog);
     safeRender(() => switchTab(data.activeTab));
   }
 

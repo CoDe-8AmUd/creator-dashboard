@@ -7,7 +7,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAnalytics, isSupported as analyticsIsSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
   signOut, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
@@ -28,6 +28,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const firebaseReady = true;
+const googleProvider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence).catch(err => console.warn("Auth persistence setup failed:", err));
 enableIndexedDbPersistence(db).catch(err => console.warn("Offline Firestore persistence unavailable:", err.code || err));
@@ -36,7 +37,7 @@ analyticsIsSupported().then(supported => {
 }).catch(() => {});
 
 export {
-  firebaseApp, auth, db, firebaseReady,
-  onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  firebaseApp, auth, db, firebaseReady, googleProvider,
+  onAuthStateChanged, signInWithPopup, signOut,
   doc, setDoc, onSnapshot, serverTimestamp
 };
