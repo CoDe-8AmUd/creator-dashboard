@@ -297,6 +297,19 @@ let lastPushedJson = null;
 let cloudSaveTimer = null;
 let onRemoteUpdateCb = null;
 
+// Firestore does not guarantee map/object key ordering is preserved round-trip, so comparing
+// a raw JSON.stringify() of what we sent against a raw JSON.stringify() of what we read back
+// can spuriously report "changed" on a pure echo of our own write. stableStringify() sorts
+// object keys recursively so the same logical state always serializes identically regardless
+// of field order — this is what makes the self-write vs. remote-change comparison reliable.
+function stableStringify(value){
+  if(Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+  if(value && typeof value === 'object'){
+    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
 function setSyncStatus(state){
   const icon = document.getElementById('syncIcon');
   const label = document.getElementById('syncLabel');
@@ -334,7 +347,7 @@ export function attachCloudSync(uid){
   const ref = doc(db, 'users', uid);
   unsubscribeSnapshot = onSnapshot(ref, (snap) => {
     if(!snap.exists()){
-      lastPushedJson = JSON.stringify(data);
+      lastPushedJson = stableStringify(data);
       setDoc(ref, { state: data, updatedAt: serverTimestamp() }).catch(err => {
         console.warn("Initial cloud push failed:", err);
         setSyncStatus('offline');
@@ -344,11 +357,15 @@ export function attachCloudSync(uid){
     }
     const remoteState = snap.data().state;
     if(!remoteState) return;
-    const remoteJson = JSON.stringify(remoteState);
-    if(remoteJson === lastPushedJson) { setSyncStatus('synced'); return; }
+    // Normalize BEFORE comparing — normalizeData() always rebuilds onto the same
+    // structuredClone(defaultData) shape, so two representations of the same logical
+    // state always compare equal here regardless of Firestore's on-the-wire field order.
+    const normalized = normalizeData(remoteState);
+    const normalizedJson = stableStringify(normalized);
+    if(normalizedJson === lastPushedJson) { setSyncStatus('synced'); return; }
     // Real-time update from another tab/device — merge and re-render instantly.
-    data = normalizeData(remoteState);
-    lastPushedJson = remoteJson;
+    data = normalized;
+    lastPushedJson = normalizedJson;
     applyDailyResets();
     if(onRemoteUpdateCb) onRemoteUpdateCb();
     setSyncStatus('synced');
@@ -363,7 +380,7 @@ function pushToCloud(){
   setSyncStatus('syncing');
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer = setTimeout(() => {
-    lastPushedJson = JSON.stringify(data);
+    lastPushedJson = stableStringify(data);
     setDoc(doc(db, 'users', currentUser), { state: data, updatedAt: serverTimestamp() })
       .then(() => setSyncStatus('synced'))
       .catch(err => {

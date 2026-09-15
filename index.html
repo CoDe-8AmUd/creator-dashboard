@@ -986,8 +986,14 @@
 
   // ---------- TAB NAVIGATION ----------
   function switchTab(tab){
-    data.activeTab = tab;
-    save();
+    // Only persist when the tab actually changes — renderAll() re-invokes switchTab()
+    // on every remote snapshot update, and an unconditional save() here would write
+    // straight back to Firestore, re-triggering the very snapshot that called it
+    // (a self-sustaining read → write → read loop).
+    if(data.activeTab !== tab){
+      data.activeTab = tab;
+      save();
+    }
     document.querySelectorAll('.tab-panel').forEach(panel => {
       const isActive = panel.dataset.tab === tab;
       panel.classList.toggle('hidden', !isActive);
