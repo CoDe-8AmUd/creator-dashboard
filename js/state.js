@@ -7,7 +7,7 @@
 // pattern the rest of the app already relies on; only a full swap-out
 // (import/reset/remote update) goes through setData().
 // =====================================================================
-import { db, doc, setDoc, onSnapshot, serverTimestamp, collection, arrayUnion } from "./firebase.js";
+import { db, doc, setDoc, onSnapshot, serverTimestamp, collection, arrayUnion, query, where, documentId } from "./firebase.js";
 
 export const TABS = ['overview', 'revenue', 'fitness', 'projects', 'academic', 'vault', 'settings'];
 export const SPLIT_ORDER = ['Push', 'Pull', 'Legs'];
@@ -141,7 +141,7 @@ export const defaultData = {
 
   // Tasks & Productivity module
   tasksModule: {
-    todos: [],        // { id, text, recurrence: 'once'|'daily', done, doneDate: 'YYYY-MM-DD'|'' }
+    todos: [],        // { id, text, recurrence: 'once'|'daily', done, doneDate: 'YYYY-MM-DD'|'', dueDate?: 'YYYY-MM-DD' } — dueDate is optional, for future planning
     milestones: [],   // { id, text, dueDate: 'YYYY-MM-DDTHH:mm', done }
     habitTemplates: ["Gym Push-Pull-Legs", "Supplements", "Coding"],
     habitChecks: {},  // { 'YYYY-MM-DD': { habitName: true } } — mirrors habitLog's date-keyed reset pattern
@@ -411,10 +411,25 @@ export function logActivityEvent(uid, text, icon){
   });
 }
 
-/** Subscribes to users/{uid}/activityLog and calls cb({ 'YYYY-MM-DD': [entries] }) on every change. */
-export function attachActivityLogSync(uid, cb){
+/**
+ * Subscribes to ONE calendar month of users/{uid}/activityLog and calls
+ * cb({ 'YYYY-MM-DD': [entries] }) on every change — never the whole collection.
+ * Doc ids are 'YYYY-MM-DD' strings, so a documentId() range query cheaply scopes
+ * the read to [year-month-01, year-month+1-01). Re-call with a different
+ * (year, month) when the Mini Daily Log Calendar navigates to a new month —
+ * each call tears down the previous month's listener first.
+ */
+export function attachActivityLogSync(uid, year, month, cb){
   if(unsubscribeActivityLog) unsubscribeActivityLog();
-  const ref = collection(db, 'users', uid, 'activityLog');
+  const pad = n => String(n).padStart(2, '0');
+  const startId = `${year}-${pad(month + 1)}-01`;
+  const nextMonth = new Date(year, month + 1, 1);
+  const endId = `${nextMonth.getFullYear()}-${pad(nextMonth.getMonth() + 1)}-01`;
+  const ref = query(
+    collection(db, 'users', uid, 'activityLog'),
+    where(documentId(), '>=', startId),
+    where(documentId(), '<', endId)
+  );
   unsubscribeActivityLog = onSnapshot(ref, (snap) => {
     const byDate = {};
     snap.forEach(d => { byDate[d.id] = Array.isArray(d.data().entries) ? d.data().entries : []; });

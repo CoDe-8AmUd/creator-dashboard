@@ -124,18 +124,19 @@
 </head>
 <body class="bg-base text-slate-200 min-h-screen font-sans antialiased">
 
-<!-- AUTH SCREEN (Firebase Google Sign-In only) -->
-<div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-base/90 backdrop-blur-xl">
+<!-- LINK GOOGLE ACCOUNT MODAL (optional — the app itself never blocks on this) -->
+<div id="authScreen" class="modal-overlay hidden">
   <div class="card glow fade-in rounded-2xl p-8 w-[90%] max-w-sm text-center">
     <div class="w-16 h-16 mx-auto rounded-2xl bg-accent/20 flex items-center justify-center mb-4">
       <i class="fa-solid fa-chart-line text-2xl text-accent2"></i>
     </div>
-    <h1 class="text-xl font-bold text-white mb-1" id="authTitle">Creator Dashboard</h1>
-    <p class="text-sm text-slate-400 mb-6" id="authSubtitle">Sign in to continue</p>
+    <h1 class="text-xl font-bold text-white mb-1" id="authTitle">Sync Across Devices</h1>
+    <p class="text-sm text-slate-400 mb-6" id="authSubtitle">Link a Google account to keep this data available on every device. Your dashboard already works and saves without this.</p>
     <button id="authGoogleBtn" class="w-full bg-white hover:bg-slate-100 transition text-slate-800 font-semibold py-3 rounded-lg mb-3 flex items-center justify-center gap-2.5">
       <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.3 18.9 12 24 12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 15.3 3 7.9 7.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.4 0 10.3-1.8 14.1-5.1l-6.5-5.5C29.5 36.1 26.9 37 24 37c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.8 40.1 16.4 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4 5.7l6.5 5.5C41.4 36 45 30.6 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
-      Sign in with Google
+      <span id="authGoogleBtnLabel">Link Google Account</span>
     </button>
+    <button id="authCloseBtn" type="button" class="text-xs text-slate-400 hover:text-accent2 transition">Not now</button>
     <p id="authError" class="text-red-400 text-sm mt-3 hidden"></p>
     <p id="authStatus" class="text-slate-500 text-xs mt-4"></p>
   </div>
@@ -172,7 +173,7 @@
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden">
+<div id="app">
 
   <div class="sticky top-0 z-40 backdrop-blur-md bg-base/70 border-b border-white/10">
     <!-- Header -->
@@ -211,7 +212,10 @@
           <button id="resetBtn" title="Reset all data" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-red-500 flex items-center justify-center text-slate-300 hover:text-red-400">
             <i class="fa-solid fa-trash"></i>
           </button>
-          <button id="lockBtn" title="Sign out" class="w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent flex items-center justify-center text-slate-300">
+          <button id="linkGoogleHeaderBtn" title="Link Google Account to sync across devices" class="hidden items-center gap-1.5 h-9 px-3 rounded-lg bg-accent hover:bg-indigo-500 transition text-white text-xs font-semibold">
+            <i class="fa-brands fa-google"></i><span class="hidden sm:inline">Sync</span>
+          </button>
+          <button id="lockBtn" title="Sign out" class="hidden w-9 h-9 rounded-lg bg-panel2 border border-border hover:border-accent items-center justify-center text-slate-300">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
           </button>
         </div>
@@ -571,14 +575,22 @@
           <h2 class="font-semibold text-white"><i class="fa-solid fa-list-check text-sky-300 mr-2"></i>To-Do <span class="opacity-60 text-xs">/ مهام فورية</span></h2>
           <span class="text-sm text-slate-400"><span id="todoDone">0</span>/<span id="todoTotal">0</span> done</span>
         </div>
-        <form id="todoForm" class="flex flex-wrap gap-2 mb-4">
+        <form id="todoForm" class="flex flex-wrap gap-2 mb-2">
           <input id="todoInput" type="text" placeholder="Add a task..." class="flex-1 min-w-[160px] bg-panel2 border border-border rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-accent outline-none" />
           <select id="todoRecurrence" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none">
             <option value="once">One-time</option>
             <option value="daily">Daily</option>
           </select>
+          <input id="todoDueDate" type="date" title="Optional — schedule for a future date" class="bg-panel2 border border-border rounded-lg px-3 py-2 text-white outline-none" />
           <button type="submit" class="bg-blue-600 hover:bg-blue-500 transition text-white px-4 rounded-lg"><i class="fa-solid fa-plus"></i></button>
         </form>
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-xs text-slate-500">Due date is optional — for future planning. Leave blank for instant tasks.</p>
+          <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+            <input id="todoGroupByDate" type="checkbox" class="accent-accent" />
+            Group by date
+          </label>
+        </div>
         <ul id="todoList" class="space-y-2"></ul>
       </section>
 
@@ -775,7 +787,16 @@
 
       <section class="card rounded-2xl p-5">
         <h2 class="font-semibold text-white mb-3"><i class="fa-solid fa-database text-emerald-300 mr-2"></i>Data & Sync <span class="opacity-60 text-xs">/ البيانات والمزامنة</span></h2>
-        <p class="text-sm text-slate-400">All changes across every module save directly and in real time to your Firebase account (<code class="text-white">users/{uid}</code>) — no manual save step, and no data is kept in this browser's local storage. Sign in with the same Google account on any device to see identical data instantly. Use <span class="text-white">Export data</span> in the top bar for an offline backup file.</p>
+        <p class="text-sm text-slate-400 mb-4">All changes across every module save directly and in real time to your Firebase account (<code class="text-white">users/{uid}</code>) — no manual save step, and no data is kept in this browser's local storage. Use <span class="text-white">Export data</span> in the top bar for an offline backup file.</p>
+        <div id="settingsAccountStatus" class="flex flex-wrap items-center justify-between gap-3 bg-panel2 border border-border rounded-xl px-4 py-3">
+          <div>
+            <p class="text-sm text-white font-medium" id="settingsAccountLabel">Using this device only</p>
+            <p class="text-xs text-slate-500" id="settingsAccountHint">Link a Google account to access this same data on your phone, laptop, or any other device.</p>
+          </div>
+          <button id="settingsLinkGoogleBtn" class="bg-accent hover:bg-indigo-500 transition text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 flex-shrink-0">
+            <i class="fa-brands fa-google"></i>Link Google Account
+          </button>
+        </div>
       </section>
     </div>
 
@@ -793,7 +814,7 @@
   // =====================================================================
   import {
     auth, firebaseReady, googleProvider,
-    onAuthStateChanged, signInWithPopup, signOut
+    onAuthStateChanged, signInWithPopup, signInAnonymously, linkWithPopup, signOut
   } from "./js/firebase.js";
   import {
     SPLIT_ORDER, GRADE_POINTS, STUDY_PLAN, allPlanCourses, GRADUATION_REQUIREMENTS, defaultData,
@@ -905,13 +926,35 @@
   applyTheme();
 
   // =====================================================================
-  // 🔐 FIREBASE AUTHENTICATION (Google Sign-In only)
+  // 🔐 FIREBASE AUTHENTICATION — anonymous by default, Google linking optional
+  // The dashboard itself is never gated on auth: #app is visible from the very
+  // first paint (see the plain HTML above, no "hidden" class), and renderAll()
+  // runs immediately with schema defaults. Anonymous sign-in happens silently
+  // in the background purely to obtain a `uid` to save data under; it is never
+  // awaited before the UI is usable.
   // =====================================================================
   const authScreen = document.getElementById('authScreen');
   const app = document.getElementById('app');
   const authError = document.getElementById('authError');
   const authStatus = document.getElementById('authStatus');
   const authGoogleBtn = document.getElementById('authGoogleBtn');
+  const authGoogleBtnLabel = document.getElementById('authGoogleBtnLabel');
+  const authCloseBtn = document.getElementById('authCloseBtn');
+  const linkGoogleHeaderBtn = document.getElementById('linkGoogleHeaderBtn');
+  const settingsLinkGoogleBtn = document.getElementById('settingsLinkGoogleBtn');
+  const settingsAccountLabel = document.getElementById('settingsAccountLabel');
+  const settingsAccountHint = document.getElementById('settingsAccountHint');
+  const lockBtn = document.getElementById('lockBtn');
+
+  function openLinkGoogleModal(){
+    authError.classList.add('hidden');
+    authStatus.textContent = "";
+    authScreen.classList.remove('hidden');
+  }
+  function closeLinkGoogleModal(){ authScreen.classList.add('hidden'); }
+  authCloseBtn.addEventListener('click', closeLinkGoogleModal);
+  linkGoogleHeaderBtn.addEventListener('click', openLinkGoogleModal);
+  settingsLinkGoogleBtn.addEventListener('click', openLinkGoogleModal);
 
   function friendlyAuthError(err){
     const code = err && err.code;
@@ -921,17 +964,38 @@
     if(code === 'auth/network-request-failed') return "Network error — check your internet connection and try again.";
     if(code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return "";
     if(code === 'auth/popup-blocked') return "Your browser blocked the sign-in popup — allow popups for this site and try again.";
+    if(code === 'auth/credential-already-in-use'){
+      return "That Google account already has its own saved data. Switching to it now — this device's data will stop being shown (it's still safe, just under the other account).";
+    }
     return (err && err.message) ? err.message.replace('Firebase: ', '') : "Authentication failed";
   }
 
   async function handleGoogleSignIn(){
     authGoogleBtn.disabled = true;
-    authStatus.textContent = "Signing you in…";
+    authStatus.textContent = "Connecting…";
     try {
-      await signInWithPopup(auth, googleProvider);
+      if(auth.currentUser && auth.currentUser.isAnonymous){
+        // Preserve this device's anonymous data by attaching a real identity to the same uid.
+        await linkWithPopup(auth.currentUser, googleProvider);
+      } else {
+        await signInWithPopup(auth, googleProvider);
+      }
       authError.classList.add('hidden');
+      closeLinkGoogleModal();
+      toast("Google account linked — synced across devices", "fa-check");
     } catch(err){
       console.warn("Auth error:", err);
+      if(err && err.code === 'auth/credential-already-in-use'){
+        // That Google identity already has its own account/uid — switch straight into it
+        // instead (this device's anonymous data is left exactly as-is under its own uid,
+        // just no longer the active session).
+        try {
+          await signInWithPopup(auth, googleProvider);
+          authError.classList.add('hidden');
+          closeLinkGoogleModal();
+          toast("Signed in with that Google account", "fa-check");
+        } catch(err2){ console.warn("Fallback sign-in failed:", err2); }
+      }
       const msg = friendlyAuthError(err);
       if(msg){
         authError.textContent = msg;
@@ -945,36 +1009,66 @@
 
   authGoogleBtn.addEventListener('click', handleGoogleSignIn);
 
-  document.getElementById('lockBtn').addEventListener('click', () => {
+  lockBtn.addEventListener('click', () => {
+    if(!confirm("Sign out of your linked Google account? This device will fall back to a fresh anonymous account until you link Google again.")) return;
     signOut(auth).catch(err => console.warn("Sign out failed:", err));
   });
+
+  function updateAuthUI(user){
+    const isLinked = !!(user && !user.isAnonymous);
+    linkGoogleHeaderBtn.classList.toggle('hidden', isLinked);
+    linkGoogleHeaderBtn.classList.toggle('flex', !isLinked);
+    lockBtn.classList.toggle('hidden', !isLinked);
+    lockBtn.classList.toggle('flex', isLinked);
+    settingsLinkGoogleBtn.classList.toggle('hidden', isLinked);
+    if(isLinked){
+      settingsAccountLabel.textContent = user.displayName ? `Synced as ${user.displayName}` : "Synced with Google";
+      settingsAccountHint.textContent = user.email || "This data is available on any device you sign into.";
+    } else {
+      settingsAccountLabel.textContent = "Using this device only";
+      settingsAccountHint.textContent = "Link a Google account to access this same data on your phone, laptop, or any other device.";
+    }
+  }
 
   onRemoteUpdate(renderAll);
 
   let currentUid = null;
 
+  // Instant load: render the UI immediately with schema defaults — never wait on auth.
+  // Deferred one tick: renderAll() touches consts/functions declared further down this same
+  // script (e.g. renderSalla's DOM refs) that only exist once the module finishes evaluating
+  // top-to-bottom, so calling it synchronously here would hit them mid-TDZ.
+  setTimeout(renderAll, 0);
+
   onAuthStateChanged(auth, (user) => {
     if(user && user.uid){
       currentUid = user.uid;
       setCurrentUser(user.uid);
-      authScreen.classList.add('hidden');
-      app.classList.remove('hidden');
-      // 100% cloud-synced: no localStorage read — start from schema defaults for an instant
-      // paint, then the Firestore snapshot (attachCloudSync) reconciles with the real data.
+      updateAuthUI(user);
+      // Reset to schema defaults before (re)attaching — guards against a previous account's
+      // data lingering on screen for the instant before this uid's Firestore snapshot arrives.
       setData(structuredClone(defaultData));
-      renderAll();
+      safeRender(renderAll);
       attachCloudSync(user.uid);
-      attachActivityLogSync(user.uid, (byDate) => {
+      attachActivityLogSync(user.uid, miniCalViewYear, miniCalViewMonth, (byDate) => {
         activityLogByDate = byDate;
         safeRender(renderMiniCalendar);
       });
     } else {
+      // No session yet (first visit, or just signed out) — get an anonymous uid in the
+      // background so saves work immediately; the UI is already visible and interactive.
       currentUid = null;
       clearCurrentUser();
       activityLogByDate = {};
+      updateAuthUI(null);
+      // Guard against a previous (e.g. just-signed-out) account's data lingering in memory
+      // and leaking into — or being overwritten by — the next anonymous session.
       setData(structuredClone(defaultData));
-      app.classList.add('hidden');
-      authScreen.classList.remove('hidden');
+      safeRender(renderAll);
+      signInAnonymously(auth).catch(err => {
+        console.warn("Anonymous sign-in failed:", err);
+        toast("Couldn't reach your account — retrying automatically", "fa-triangle-exclamation");
+      });
     }
   }, (err) => {
     console.warn("Auth state listener error:", err);
@@ -1967,6 +2061,58 @@
     if(!data.tasksModule) data.tasksModule = structuredClone(defaultData.tasksModule);
   }
 
+  function todoListItem(t, today){
+    const isDone = t.recurrence === 'daily' ? t.doneDate === today : !!t.done;
+    const arr = data.tasksModule.todos;
+    const li = document.createElement('li');
+    li.className = "fade-in flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
+
+    const check = document.createElement('button');
+    check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
+      (isDone ? "bg-sky-500 border-sky-500 text-white" : "border-border text-transparent");
+    check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+    check.addEventListener('click', () => {
+      const willBeDone = !isDone;
+      if(t.recurrence === 'daily'){
+        t.doneDate = isDone ? "" : today;
+      } else {
+        t.done = !t.done;
+      }
+      save();
+      renderTodos();
+      renderOverviewTodos();
+      if(willBeDone) logActivity(`Completed to-do: ${t.text}`, 'fa-list-check');
+    });
+
+    const body = document.createElement('div');
+    body.className = "flex-1";
+    const text = document.createElement('div');
+    text.className = "text-sm " + (isDone ? "todo-done" : "text-slate-200");
+    text.textContent = t.text;
+    body.append(text);
+    const meta = document.createElement('div');
+    meta.className = "text-[11px] text-slate-500 flex gap-2 mt-0.5";
+    const isFuture = t.dueDate && t.dueDate > today;
+    const isOverdue = t.dueDate && t.dueDate < today && !isDone;
+    meta.innerHTML = (t.recurrence === 'daily' ? '<span><i class="fa-solid fa-rotate mr-1"></i>Daily</span>' : '<span><i class="fa-regular fa-circle mr-1"></i>One-time</span>') +
+      (t.dueDate ? `<span class="${isOverdue ? 'text-red-400' : isFuture ? 'text-amber-300' : ''}"><i class="fa-regular fa-calendar mr-1"></i>${t.dueDate}${isFuture ? ' (upcoming)' : isOverdue ? ' (overdue)' : ''}</span>` : "");
+    body.append(meta);
+
+    const del = document.createElement('button');
+    del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
+    del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    del.addEventListener('click', () => {
+      const idx = arr.indexOf(t);
+      if(idx > -1) arr.splice(idx, 1);
+      save();
+      renderTodos();
+      renderOverviewTodos();
+    });
+
+    li.append(check, body, del);
+    return li;
+  }
+
   function renderTodos(){
     ensureTasksModule();
     const arr = data.tasksModule.todos;
@@ -1976,63 +2122,44 @@
     if(arr.length === 0){
       list.append(emptyStateEl('fa-list-check', "No tasks yet — add one above.", 'li'));
     }
-    arr.forEach((t) => {
-      const isDone = t.recurrence === 'daily' ? t.doneDate === today : !!t.done;
-      const li = document.createElement('li');
-      li.className = "fade-in flex items-center gap-3 bg-panel2 border border-border rounded-lg px-3 py-2";
 
-      const check = document.createElement('button');
-      check.className = "w-6 h-6 rounded-md border flex items-center justify-center flex-shrink-0 " +
-        (isDone ? "bg-sky-500 border-sky-500 text-white" : "border-border text-transparent");
-      check.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
-      check.addEventListener('click', () => {
-        const willBeDone = !isDone;
-        if(t.recurrence === 'daily'){
-          t.doneDate = isDone ? "" : today;
-        } else {
-          t.done = !t.done;
-        }
-        save();
-        renderTodos();
-        renderOverviewTodos();
-        if(willBeDone) logActivity(`Completed to-do: ${t.text}`, 'fa-list-check');
+    const groupByDate = document.getElementById('todoGroupByDate').checked;
+    if(!groupByDate){
+      arr.forEach(t => list.append(todoListItem(t, today)));
+    } else {
+      // Chronological grouping for future planning: Overdue -> Today -> This Week -> Later -> No due date.
+      const weekAhead = new Date(); weekAhead.setDate(weekAhead.getDate() + 7);
+      const weekAheadStr = weekAhead.toISOString().slice(0, 10);
+      const groups = { overdue: [], today: [], week: [], later: [], none: [] };
+      arr.forEach(t => {
+        if(!t.dueDate) groups.none.push(t);
+        else if(t.dueDate < today) groups.overdue.push(t);
+        else if(t.dueDate === today) groups.today.push(t);
+        else if(t.dueDate <= weekAheadStr) groups.week.push(t);
+        else groups.later.push(t);
       });
-
-      const body = document.createElement('div');
-      body.className = "flex-1";
-      const text = document.createElement('div');
-      text.className = "text-sm " + (isDone ? "todo-done" : "text-slate-200");
-      text.textContent = t.text;
-      body.append(text);
-      const meta = document.createElement('div');
-      meta.className = "text-[11px] text-slate-500 flex gap-2 mt-0.5";
-      meta.innerHTML = (t.recurrence === 'daily' ? '<span><i class="fa-solid fa-rotate mr-1"></i>Daily</span>' : '<span><i class="fa-regular fa-circle mr-1"></i>One-time</span>') +
-        (t.dueDate ? `<span><i class="fa-regular fa-calendar mr-1"></i>${t.dueDate}</span>` : "");
-      body.append(meta);
-
-      const del = document.createElement('button');
-      del.className = "text-slate-500 hover:text-red-400 transition flex-shrink-0";
-      del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-      del.addEventListener('click', () => {
-        const idx = arr.indexOf(t);
-        if(idx > -1) arr.splice(idx, 1);
-        save();
-        renderTodos();
-        renderOverviewTodos();
+      [['overdue','Overdue'], ['today','Today'], ['week','Next 7 Days'], ['later','Future Tasks'], ['none','No Due Date']].forEach(([key, label]) => {
+        const items = groups[key].slice().sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
+        if(!items.length) return;
+        const heading = document.createElement('li');
+        heading.className = "text-[11px] font-semibold uppercase tracking-wide text-slate-500 pt-2 first:pt-0";
+        heading.textContent = `${label} (${items.length})`;
+        list.append(heading);
+        items.forEach(t => list.append(todoListItem(t, today)));
       });
-
-      li.append(check, body, del);
-      list.append(li);
-    });
+    }
 
     document.getElementById('todoTotal').textContent = arr.length;
     document.getElementById('todoDone').textContent = arr.filter(t => t.recurrence === 'daily' ? t.doneDate === today : t.done).length;
   }
 
+  document.getElementById('todoGroupByDate').addEventListener('change', renderTodos);
+
   document.getElementById('todoForm').addEventListener('submit', (e) => {
     e.preventDefault();
     ensureTasksModule();
     const input = document.getElementById('todoInput');
+    const dueDateInput = document.getElementById('todoDueDate');
     const val = input.value.trim();
     if(!val) return;
     data.tasksModule.todos.push({
@@ -2040,9 +2167,11 @@
       text: val,
       recurrence: document.getElementById('todoRecurrence').value,
       done: false,
-      doneDate: ""
+      doneDate: "",
+      dueDate: dueDateInput.value || ""
     });
     input.value = "";
+    dueDateInput.value = "";
     save();
     renderTodos();
     renderOverviewTodos();
@@ -3205,15 +3334,29 @@
     });
   }
 
+  /** Re-subscribes the activityLog listener to whichever month is currently in view — the
+   *  query is date-bounded (see attachActivityLogSync in js/state.js), so navigating never
+   *  pulls the whole collection, only the ~30 docs for that one month. */
+  function resyncMiniCalMonth(){
+    activityLogByDate = {};
+    renderMiniCalendar();
+    if(currentUid){
+      attachActivityLogSync(currentUid, miniCalViewYear, miniCalViewMonth, (byDate) => {
+        activityLogByDate = byDate;
+        safeRender(renderMiniCalendar);
+      });
+    }
+  }
+
   document.getElementById('miniCalPrevMonth').addEventListener('click', () => {
     miniCalViewMonth--;
     if(miniCalViewMonth < 0){ miniCalViewMonth = 11; miniCalViewYear--; }
-    renderMiniCalendar();
+    resyncMiniCalMonth();
   });
   document.getElementById('miniCalNextMonth').addEventListener('click', () => {
     miniCalViewMonth++;
     if(miniCalViewMonth > 11){ miniCalViewMonth = 0; miniCalViewYear++; }
-    renderMiniCalendar();
+    resyncMiniCalMonth();
   });
 
   // ---------- OVERVIEW WIDGETS ----------
